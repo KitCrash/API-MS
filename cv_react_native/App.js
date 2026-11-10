@@ -19,6 +19,7 @@ import articlesData from './assets/cv_articles.json';
 import { imageMap, getImageSource } from './assets/imageMap';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+const STATUSBAR_HEIGHT = Platform.OS === 'android' ? (StatusBar.currentHeight || 28) : 0;
 
 // 🎨 Theme Definitions
 const THEMES = {
@@ -218,8 +219,12 @@ export default function App() {
   };
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.bg }]}>
-      <StatusBar barStyle={theme.statusBar} backgroundColor={theme.bg} />
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.card }]}>
+      <StatusBar
+        barStyle={theme.statusBar}
+        backgroundColor={theme.card}
+        translucent={Platform.OS === 'android'}
+      />
 
       {activeArticle ? (
         // ---------------- DETAIL SCREEN (READER MODE) ----------------
@@ -228,7 +233,7 @@ export default function App() {
           <View style={[styles.detailNavBar, { borderBottomColor: theme.border, backgroundColor: theme.card }]}>
             <TouchableOpacity
               onPress={() => setActiveArticle(null)}
-              style={styles.backBtn}
+              style={[styles.backBtn, { backgroundColor: theme.primaryBg }]}
               hitSlop={12}
             >
               <Text style={[styles.backBtnText, { color: theme.primary }]}>← Back</Text>
@@ -242,17 +247,20 @@ export default function App() {
             <View style={styles.headerRightControls}>
               <TouchableOpacity
                 onPress={() => setFontScale((s) => Math.max(0.85, +(s - 0.1).toFixed(2)))}
-                style={styles.textScaleBtn}
+                style={[styles.textScaleBtn, { backgroundColor: theme.codeBg }]}
               >
                 <Text style={[styles.controlText, { color: theme.text }]}>A-</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => setFontScale((s) => Math.min(1.4, +(s + 0.1).toFixed(2)))}
-                style={styles.textScaleBtn}
+                style={[styles.textScaleBtn, { backgroundColor: theme.codeBg }]}
               >
                 <Text style={[styles.controlText, { color: theme.text }]}>A+</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={toggleTheme} style={styles.themeToggleBtn}>
+              <TouchableOpacity
+                onPress={toggleTheme}
+                style={[styles.themeToggleBtn, { backgroundColor: theme.codeBg }]}
+              >
                 <Text style={{ fontSize: 16 }}>
                   {themeKey === 'light' ? '🌙' : themeKey === 'dark' ? '📜' : '☀️'}
                 </Text>
@@ -538,6 +546,7 @@ function FormattedContent({ content, theme, fontScale }) {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
+    paddingTop: STATUSBAR_HEIGHT,
   },
   container: {
     flex: 1,
@@ -549,6 +558,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
+    minHeight: 56,
   },
   appTitle: {
     fontSize: 18,
@@ -703,33 +713,40 @@ const styles = StyleSheet.create({
   detailNavBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 14,
-    paddingVertical: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
     borderBottomWidth: 1,
+    minHeight: 52,
   },
   backBtn: {
-    paddingRight: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+    marginRight: 8,
   },
   backBtnText: {
-    fontSize: 14.5,
+    fontSize: 14,
     fontWeight: 'bold',
   },
   navTitle: {
     flex: 1,
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: 'bold',
   },
   headerRightControls: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 6,
   },
   textScaleBtn: {
-    paddingHorizontal: 6,
-    paddingVertical: 2,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    borderRadius: 6,
   },
   controlText: {
-    fontSize: 13.5,
+    fontSize: 12.5,
     fontWeight: 'bold',
   },
   detailScrollContent: {
