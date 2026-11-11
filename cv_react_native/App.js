@@ -144,6 +144,26 @@ export default function App() {
     });
   }, [selectedFilter, searchQuery, bookmarks, readArticles]);
 
+  // Current question position and Next / Previous question navigation
+  const { prevArticle, nextArticle, articlePosition, totalInList } = useMemo(() => {
+    if (!activeArticle) return { prevArticle: null, nextArticle: null, articlePosition: 0, totalInList: 0 };
+
+    let list = filteredArticles;
+    let idx = list.findIndex((a) => a.id === activeArticle.id);
+
+    if (idx === -1) {
+      list = articlesData;
+      idx = list.findIndex((a) => a.id === activeArticle.id);
+    }
+
+    return {
+      prevArticle: idx > 0 ? list[idx - 1] : null,
+      nextArticle: idx >= 0 && idx < list.length - 1 ? list[idx + 1] : null,
+      articlePosition: idx + 1,
+      totalInList: list.length,
+    };
+  }, [activeArticle, filteredArticles]);
+
   // Read progress
   const progressPercent = Math.round((readArticles.size / articlesData.length) * 100);
 
@@ -239,6 +259,31 @@ export default function App() {
               <Text style={[styles.backBtnText, { color: theme.primary }]}>← Back</Text>
             </TouchableOpacity>
 
+            {/* Stepper / Jumper: ◀ 2/12 ▶ */}
+            <View style={[styles.navCounterGroup, { backgroundColor: theme.codeBg, borderColor: theme.border }]}>
+              <TouchableOpacity
+                disabled={!prevArticle}
+                onPress={() => prevArticle && setActiveArticle(prevArticle)}
+                style={[styles.navArrowBtn, { opacity: prevArticle ? 1 : 0.3 }]}
+                hitSlop={8}
+              >
+                <Text style={[styles.navArrowText, { color: theme.text }]}>◀</Text>
+              </TouchableOpacity>
+
+              <Text style={[styles.navCounterText, { color: theme.textMuted }]}>
+                {articlePosition}/{totalInList}
+              </Text>
+
+              <TouchableOpacity
+                disabled={!nextArticle}
+                onPress={() => nextArticle && setActiveArticle(nextArticle)}
+                style={[styles.navArrowBtn, { opacity: nextArticle ? 1 : 0.3 }]}
+                hitSlop={8}
+              >
+                <Text style={[styles.navArrowText, { color: theme.primary }]}>▶</Text>
+              </TouchableOpacity>
+            </View>
+
             <Text style={[styles.navTitle, { color: theme.text }]} numberOfLines={1}>
               {activeArticle.category}
             </Text>
@@ -310,6 +355,46 @@ export default function App() {
             {/* Markdown Text Body */}
             <FormattedContent content={activeArticle.markdown} theme={theme} fontScale={fontScale} />
 
+            {/* Previous & Next Question Jump Cards */}
+            <View style={styles.questionNavContainer}>
+              {prevArticle ? (
+                <TouchableOpacity
+                  onPress={() => setActiveArticle(prevArticle)}
+                  activeOpacity={0.8}
+                  style={[styles.jumpBtn, { backgroundColor: theme.card, borderColor: theme.border }]}
+                >
+                  <Text style={[styles.jumpSubText, { color: theme.textMuted }]}>← Previous Question</Text>
+                  <Text style={[styles.jumpMainText, { color: theme.text }]} numberOfLines={1}>
+                    {prevArticle.title}
+                  </Text>
+                </TouchableOpacity>
+              ) : (
+                <View style={{ flex: 1 }} />
+              )}
+
+              {nextArticle ? (
+                <TouchableOpacity
+                  onPress={() => setActiveArticle(nextArticle)}
+                  activeOpacity={0.8}
+                  style={[
+                    styles.jumpBtn,
+                    styles.jumpBtnNext,
+                    { backgroundColor: theme.primaryBg, borderColor: theme.primary },
+                  ]}
+                >
+                  <Text style={[styles.jumpSubText, { color: theme.primary, textAlign: 'right' }]}>
+                    Next Question →
+                  </Text>
+                  <Text
+                    style={[styles.jumpMainText, { color: theme.accent, fontWeight: 'bold', textAlign: 'right' }]}
+                    numberOfLines={1}
+                  >
+                    {nextArticle.title}
+                  </Text>
+                </TouchableOpacity>
+              ) : null}
+            </View>
+
             {/* Bottom Actions */}
             <View style={styles.bottomActionBar}>
               <TouchableOpacity
@@ -344,7 +429,10 @@ export default function App() {
               </Text>
             </View>
 
-            <TouchableOpacity onPress={toggleTheme} style={styles.themeToggleBtn}>
+            <TouchableOpacity
+              onPress={toggleTheme}
+              style={[styles.themeToggleBtn, { backgroundColor: theme.codeBg }]}
+            >
               <Text style={{ fontSize: 18 }}>
                 {themeKey === 'light' ? '🌙' : themeKey === 'dark' ? '📜' : '☀️'}
               </Text>
@@ -448,6 +536,96 @@ export default function App() {
   );
 }
 
+// ---------------- INLINE MARKDOWN PARSER (BOLD, ITALIC, CODE, MATH) ----------------
+function renderInlineText(rawText, baseStyle, theme) {
+  if (!rawText) return null;
+  const sanitizedText = rawText.replace(/<br\s*\/?>/gi, ' ');
+
+  const tokens = [];
+  const regex = /(\*\*[\s\S]+?\*\*|`[^`]+`|\*[^\*]+?\*|\$[^\$]+?\$)/g;
+  let lastIndex = 0;
+  let match;
+
+  while ((match = regex.exec(sanitizedText)) !== null) {
+    if (match.index > lastIndex) {
+      tokens.push({ type: 'text', val: sanitizedText.substring(lastIndex, match.index) });
+    }
+    const token = match[0];
+    if (token.startsWith('**') && token.endsWith('**') && token.length >= 4) {
+      tokens.push({ type: 'bold', val: token.slice(2, -2) });
+    } else if (token.startsWith('`') && token.endsWith('`') && token.length >= 2) {
+      tokens.push({ type: 'code', val: token.slice(1, -1) });
+    } else if (token.startsWith('$') && token.endsWith('$') && token.length >= 2) {
+      tokens.push({ type: 'math', val: token.slice(1, -1) });
+    } else if (token.startsWith('*') && token.endsWith('*') && token.length >= 2) {
+      tokens.push({ type: 'italic', val: token.slice(1, -1) });
+    }
+    lastIndex = regex.lastIndex;
+  }
+
+  if (lastIndex < sanitizedText.length) {
+    tokens.push({ type: 'text', val: sanitizedText.substring(lastIndex) });
+  }
+
+  return tokens.map((t, idx) => {
+    if (t.type === 'bold') {
+      return (
+        <Text key={`b-${idx}`} style={[baseStyle, { fontWeight: 'bold', color: theme.text }]}>
+          {t.val}
+        </Text>
+      );
+    }
+    if (t.type === 'code') {
+      return (
+        <Text
+          key={`c-${idx}`}
+          style={[
+            baseStyle,
+            {
+              fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+              backgroundColor: theme.codeBg,
+              color: theme.accent,
+              borderRadius: 3,
+            },
+          ]}
+        >
+          {` ${t.val} `}
+        </Text>
+      );
+    }
+    if (t.type === 'math') {
+      return (
+        <Text
+          key={`m-${idx}`}
+          style={[
+            baseStyle,
+            {
+              fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+              fontStyle: 'italic',
+              fontWeight: '600',
+              color: theme.text,
+            },
+          ]}
+        >
+          {t.val}
+        </Text>
+      );
+    }
+    if (t.type === 'italic') {
+      return (
+        <Text key={`i-${idx}`} style={[baseStyle, { fontStyle: 'italic' }]}>
+          {t.val}
+        </Text>
+      );
+    }
+    return (
+      <Text key={`t-${idx}`} style={baseStyle}>
+        {t.val}
+      </Text>
+    );
+  });
+}
+
 // ---------------- FORMATTED CONTENT RENDERER ----------------
 function FormattedContent({ content, theme, fontScale }) {
   if (!content) return null;
@@ -489,13 +667,221 @@ function FormattedContent({ content, theme, fontScale }) {
       continue;
     }
 
-    // Formula Box detection (lines containing formula patterns or equations)
-    if (trimmed.includes('$$') || trimmed.includes('\\begin{equation}') || (trimmed.startsWith('Formula:') || trimmed.startsWith('Equation:'))) {
+    // Skip redundant web tags and stray standalone dollar signs
+    if (trimmed.startsWith('<AsyncImage') || trimmed.includes('<AsyncImage') || trimmed === '<br>' || trimmed === '$' || trimmed === '$$') {
+      continue;
+    }
+
+    // Interactive flowchart box tag handling
+    if (trimmed.startsWith('<box') || trimmed.startsWith('</box>') || trimmed.startsWith('<icon')) {
+      const boxMatch = trimmed.match(/>([^<]+)<\/box>/);
+      if (boxMatch) {
+        elements.push(
+          <View key={`box-${i}`} style={[styles.flowcard, { backgroundColor: theme.codeBg, borderColor: theme.border }]}>
+            <Text style={[styles.flowcardText, { color: theme.primary, fontSize: 13.5 * fontScale }]}>
+              {boxMatch[1]}
+            </Text>
+          </View>
+        );
+      } else if (trimmed.includes('arrow-down')) {
+        elements.push(
+          <View key={`arrow-${i}`} style={{ alignItems: 'center', marginVertical: 3 }}>
+            <Text style={{ color: theme.primary, fontSize: 16 }}>↓</Text>
+          </View>
+        );
+      }
+      continue;
+    }
+
+    // Markdown Table Detection
+    if (trimmed.startsWith('|') && trimmed.endsWith('|')) {
+      const tableLines = [];
+      while (i < lines.length && lines[i].trim().startsWith('|') && lines[i].trim().endsWith('|')) {
+        const tLine = lines[i].trim();
+        if (!/^\|[\s\-:]+(\|[\s\-:]+)+\|$/.test(tLine)) {
+          const cells = tLine
+            .split('|')
+            .slice(1, -1)
+            .map((c) => c.trim());
+          tableLines.push(cells);
+        }
+        i++;
+      }
+      i--;
+
+      if (tableLines.length > 0) {
+        const headerCells = tableLines[0];
+        const bodyRows = tableLines.slice(1);
+
+        elements.push(
+          <ScrollView
+            key={`tbl-${i}`}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={styles.tableScrollWrapper}
+          >
+            <View style={[styles.tableContainer, { borderColor: theme.border, backgroundColor: theme.card }]}>
+              <View style={[styles.tableHeaderRow, { backgroundColor: theme.codeBg, borderBottomColor: theme.border }]}>
+                {headerCells.map((h, hIdx) => (
+                  <View key={`th-${hIdx}`} style={[styles.tableCell, { minWidth: 110 }]}>
+                    <Text style={[styles.tableHeaderText, { color: theme.text, fontSize: 13 * fontScale }]}>
+                      {h}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+              {bodyRows.map((row, rIdx) => (
+                <View
+                  key={`tr-${rIdx}`}
+                  style={[
+                    styles.tableBodyRow,
+                    {
+                      borderBottomColor: theme.border,
+                      backgroundColor: rIdx % 2 === 0 ? theme.card : theme.bg,
+                    },
+                  ]}
+                >
+                  {row.map((cell, cIdx) => (
+                    <View key={`td-${cIdx}`} style={[styles.tableCell, { minWidth: 110 }]}>
+                      <Text style={[styles.tableCellText, { color: theme.text, fontSize: 13 * fontScale }]}>
+                        {renderInlineText(cell, { color: theme.text, fontSize: 13 * fontScale }, theme)}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+              ))}
+            </View>
+          </ScrollView>
+        );
+      }
+      continue;
+    }
+
+    // Helper to render an elevated Mathematical Formula Block Box
+    const createFormulaBox = (content, keyIndex) => {
+      const cleanContent = content
+        .replace(/^\s*\$+\s*/g, '')
+        .replace(/\s*\$+\s*$/g, '')
+        .trim();
+
+      if (!cleanContent) return null;
+
+      return (
+        <View
+          key={`formula-box-${keyIndex}`}
+          style={[
+            styles.formulaBox,
+            {
+              backgroundColor: theme.codeBg,
+              borderColor: theme.border,
+              borderLeftColor: theme.primary,
+            },
+          ]}
+        >
+          <View style={styles.formulaHeaderRow}>
+            <View style={[styles.formulaBadge, { backgroundColor: theme.primaryBg }]}>
+              <Text style={{ fontSize: 11 }}>📐</Text>
+              <Text style={[styles.formulaLabel, { color: theme.primary }]}>Mathematical Formula</Text>
+            </View>
+          </View>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingVertical: 2 }}>
+            <Text style={[styles.formulaContent, { color: theme.text, fontSize: 14 * fontScale }]}>
+              {cleanContent}
+            </Text>
+          </ScrollView>
+        </View>
+      );
+    };
+
+    // Multi-line or single-line Formula Block detection ($$ ... $$)
+    if (trimmed.startsWith('$$')) {
+      const formulaLines = [];
+      let fContent = trimmed.slice(2);
+      if (fContent.endsWith('$$') && fContent.length >= 2) {
+        formulaLines.push(fContent.slice(0, -2).trim());
+      } else {
+        if (fContent.trim()) formulaLines.push(fContent.trim());
+        i++;
+        while (i < lines.length && !lines[i].trim().endsWith('$$') && !lines[i].trim().startsWith('$$')) {
+          formulaLines.push(lines[i]);
+          i++;
+        }
+        if (i < lines.length) {
+          const endTrim = lines[i].trim().replace(/\$\$/g, '').trim();
+          if (endTrim) formulaLines.push(endTrim);
+        }
+      }
+
+      const fullFormula = formulaLines.join('\n').trim();
+      if (fullFormula) {
+        elements.push(createFormulaBox(fullFormula, i));
+      }
+      continue;
+    }
+
+    // Matrix block starting with ⎡
+    if (trimmed.startsWith('⎡')) {
+      const matrixLines = [rawLine];
+      i++;
+      while (i < lines.length && (lines[i].trim().startsWith('⎢') || lines[i].trim().startsWith('⎣') || lines[i].trim().startsWith('=') || lines[i].trim().startsWith('⎡'))) {
+        matrixLines.push(lines[i]);
+        i++;
+      }
+      i--;
+      elements.push(createFormulaBox(matrixLines.join('\n'), i));
+      continue;
+    }
+
+    if (trimmed.includes('$$') || trimmed.startsWith('Formula:') || trimmed.startsWith('Equation:') || trimmed.startsWith('Expression:')) {
+      const cleanFormula = trimmed.replace(/\$\$/g, '').replace(/^(Formula|Equation|Expression):\s*/i, '').trim();
+      if (cleanFormula) {
+        elements.push(createFormulaBox(cleanFormula, i));
+      }
+      continue;
+    }
+
+    // Standalone equation line (contains = or ≈ and math symbols like ∑, √, ², ᵀ, etc.)
+    const isStandaloneEquation = (
+      !trimmed.startsWith('#') &&
+      !trimmed.startsWith('-') &&
+      !trimmed.startsWith('*') &&
+      !trimmed.startsWith('|') &&
+      !trimmed.startsWith('<') &&
+      !trimmed.match(/^\d+\.\s/) &&
+      trimmed.length > 3 &&
+      trimmed.length < 250 &&
+      /^[a-zA-Z0-9\(\)\,\'\s\_\-]+\s*=\s*[\s\S]+$/.test(trimmed) &&
+      (trimmed.includes('∑') || trimmed.includes('√') || trimmed.includes('²') || trimmed.includes('ᵀ') || trimmed.includes('×') || trimmed.includes('θ') || trimmed.includes('π') || trimmed.includes('σ') || trimmed.includes('λ') || trimmed.includes('ρ') || trimmed.includes('α') || (trimmed.includes('(') && trimmed.includes('/')) || trimmed.includes('max(') || trimmed.includes('min(') || trimmed.includes('e^'))
+    );
+
+    if (isStandaloneEquation) {
+      elements.push(createFormulaBox(trimmed, i));
+      continue;
+    }
+
+    // Numbered List Items: 1. **Title:** description
+    const numMatch = trimmed.match(/^(\d+)\.\s+(.*)/);
+    if (numMatch) {
       elements.push(
-        <View key={`f-${i}`} style={[styles.formulaBox, { backgroundColor: theme.card, borderColor: theme.primary }]}>
-          <Text style={[styles.formulaLabel, { color: theme.primary }]}>📐 Mathematical Expression</Text>
-          <Text style={[styles.formulaContent, { color: theme.text, fontSize: 13.5 * fontScale }]}>
-            {trimmed.replace(/\$\$/g, '').replace(/\\\[|\\\]/g, '')}
+        <View key={`ol-${i}`} style={styles.numberedRow}>
+          <View style={[styles.numberBadge, { backgroundColor: theme.primaryBg }]}>
+            <Text style={[styles.numberBadgeText, { color: theme.primary }]}>{numMatch[1]}</Text>
+          </View>
+          <Text style={[styles.bulletText, { color: theme.text, fontSize: 14.5 * fontScale }]}>
+            {renderInlineText(numMatch[2], { color: theme.text, fontSize: 14.5 * fontScale }, theme)}
+          </Text>
+        </View>
+      );
+      continue;
+    }
+
+    // Bullet List Items: - text or * text
+    if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
+      elements.push(
+        <View key={`li-${i}`} style={styles.bulletRow}>
+          <Text style={[styles.bulletDot, { color: theme.primary }]}>•</Text>
+          <Text style={[styles.bulletText, { color: theme.text, fontSize: 14.5 * fontScale }]}>
+            {renderInlineText(trimmed.substring(2), { color: theme.text, fontSize: 14.5 * fontScale }, theme)}
           </Text>
         </View>
       );
@@ -506,34 +892,25 @@ function FormattedContent({ content, theme, fontScale }) {
     if (trimmed.startsWith('# ')) {
       elements.push(
         <Text key={`h1-${i}`} style={[styles.h1, { color: theme.text, fontSize: 19 * fontScale }]}>
-          {trimmed.replace(/^#+\s*/, '')}
+          {renderInlineText(trimmed.replace(/^#+\s*/, ''), { color: theme.text, fontSize: 19 * fontScale, fontWeight: 'bold' }, theme)}
         </Text>
       );
     } else if (trimmed.startsWith('## ')) {
       elements.push(
         <Text key={`h2-${i}`} style={[styles.h2, { color: theme.primary, fontSize: 17 * fontScale }]}>
-          {trimmed.replace(/^#+\s*/, '')}
+          {renderInlineText(trimmed.replace(/^#+\s*/, ''), { color: theme.primary, fontSize: 17 * fontScale, fontWeight: 'bold' }, theme)}
         </Text>
       );
     } else if (trimmed.startsWith('### ')) {
       elements.push(
         <Text key={`h3-${i}`} style={[styles.h3, { color: theme.text, fontSize: 15 * fontScale }]}>
-          {trimmed.replace(/^#+\s*/, '')}
+          {renderInlineText(trimmed.replace(/^#+\s*/, ''), { color: theme.text, fontSize: 15 * fontScale, fontWeight: 'bold' }, theme)}
         </Text>
-      );
-    } else if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
-      elements.push(
-        <View key={`li-${i}`} style={styles.bulletRow}>
-          <Text style={[styles.bulletDot, { color: theme.primary }]}>•</Text>
-          <Text style={[styles.bulletText, { color: theme.text, fontSize: 14.5 * fontScale }]}>
-            {trimmed.substring(2)}
-          </Text>
-        </View>
       );
     } else {
       elements.push(
         <Text key={`p-${i}`} style={[styles.paragraph, { color: theme.text, fontSize: 14.5 * fontScale }]}>
-          {trimmed}
+          {renderInlineText(trimmed, { color: theme.text, fontSize: 14.5 * fontScale }, theme)}
         </Text>
       );
     }
@@ -825,20 +1202,35 @@ const styles = StyleSheet.create({
   },
   formulaBox: {
     borderWidth: 1.2,
-    borderRadius: 8,
+    borderLeftWidth: 4.5,
+    borderRadius: 10,
     padding: 12,
-    marginVertical: 10,
+    marginVertical: 12,
+  },
+  formulaHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  formulaBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+    gap: 5,
   },
   formulaLabel: {
-    fontSize: 11,
+    fontSize: 10.5,
     fontWeight: 'bold',
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    marginBottom: 6,
+    letterSpacing: 0.6,
   },
   formulaContent: {
     fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
-    lineHeight: 20,
+    lineHeight: 24,
+    letterSpacing: 0.4,
+    fontWeight: '600',
   },
   codeBlock: {
     borderWidth: 1,
@@ -893,6 +1285,113 @@ const styles = StyleSheet.create({
   modalImage: {
     width: SCREEN_WIDTH - 24,
     height: SCREEN_HEIGHT * 0.7,
+  },
+  navCounterGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 8,
+    borderWidth: 1,
+    marginRight: 8,
+    gap: 4,
+  },
+  navArrowBtn: {
+    paddingHorizontal: 7,
+    paddingVertical: 4,
+    borderRadius: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  navArrowText: {
+    fontSize: 11,
+    fontWeight: 'bold',
+  },
+  navCounterText: {
+    fontSize: 11.5,
+    fontWeight: '600',
+    paddingHorizontal: 2,
+  },
+  questionNavContainer: {
+    flexDirection: 'row',
+    gap: 10,
+    marginTop: 20,
+    marginBottom: 8,
+  },
+  jumpBtn: {
+    flex: 1,
+    padding: 12,
+    borderRadius: 10,
+    borderWidth: 1.2,
+    justifyContent: 'center',
+  },
+  jumpBtnNext: {
+    alignItems: 'flex-end',
+  },
+  jumpSubText: {
+    fontSize: 11,
+    fontWeight: 'bold',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 4,
+  },
+  jumpMainText: {
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  numberedRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 8,
+  },
+  numberBadge: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 8,
+    marginTop: 1,
+  },
+  numberBadgeText: {
+    fontSize: 11.5,
+    fontWeight: 'bold',
+  },
+  tableScrollWrapper: {
+    marginVertical: 12,
+  },
+  tableContainer: {
+    borderWidth: 1,
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
+  tableHeaderRow: {
+    flexDirection: 'row',
+    borderBottomWidth: 1,
+  },
+  tableHeaderText: {
+    fontWeight: 'bold',
+  },
+  tableBodyRow: {
+    flexDirection: 'row',
+    borderBottomWidth: 1,
+  },
+  tableCell: {
+    padding: 10,
+    justifyContent: 'center',
+  },
+  tableCellText: {
+    lineHeight: 18,
+  },
+  flowcard: {
+    padding: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    marginVertical: 4,
+    alignItems: 'center',
+  },
+  flowcardText: {
+    fontWeight: 'bold',
   },
   emptyContainer: {
     alignItems: 'center',
