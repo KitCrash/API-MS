@@ -73,6 +73,18 @@ export default function App() {
   const [modalImage, setModalImage] = useState(null);
   const [chatModalVisible, setChatModalVisible] = useState(false);
   const [chatQuery, setChatQuery] = useState('');
+  const [toast, setToast] = useState(null);
+  const toastTimeoutRef = useRef(null);
+
+  const showToast = useCallback((message, icon = '✓') => {
+    if (toastTimeoutRef.current) {
+      clearTimeout(toastTimeoutRef.current);
+    }
+    setToast({ message, icon });
+    toastTimeoutRef.current = setTimeout(() => {
+      setToast(null);
+    }, 2200);
+  }, []);
 
   // Swipe from left edge / left side of screen to go back
   const panResponder = useRef(
@@ -92,30 +104,41 @@ export default function App() {
     })
   ).current;
 
-  // Real-time Chat / Keyword search across all questions and answers
+  // Real-time Chat / Keyword search across all questions and answers with multi-word ranking
   const chatResults = useMemo(() => {
     if (!chatQuery.trim()) return [];
     const q = chatQuery.toLowerCase().trim();
+    const queryWords = q.split(/\s+/).filter(w => w.length > 0);
     const results = [];
 
     for (const art of articlesData) {
       let score = 0;
       let matchedSnippet = '';
 
-      const inTitle = art.title?.toLowerCase().includes(q);
-      const inPrompt = art.prompt?.toLowerCase().includes(q);
-      const inCategory = art.category?.toLowerCase().includes(q);
+      const titleLower = art.title?.toLowerCase() || '';
+      const promptLower = art.prompt?.toLowerCase() || '';
+      const catLower = art.category?.toLowerCase() || '';
+      const mdLower = art.markdown?.toLowerCase() || '';
 
-      if (inTitle) score += 10;
-      if (inPrompt) score += 5;
-      if (inCategory) score += 3;
+      // Full phrase matches get highest priority
+      if (titleLower.includes(q)) score += 25;
+      if (promptLower.includes(q)) score += 15;
+      if (catLower.includes(q)) score += 10;
+      if (mdLower.includes(q)) score += 8;
 
-      if (art.markdown) {
+      // Word-by-word matches
+      for (const word of queryWords) {
+        if (titleLower.includes(word)) score += 6;
+        if (promptLower.includes(word)) score += 4;
+        if (catLower.includes(word)) score += 3;
+        if (mdLower.includes(word)) score += 2;
+      }
+
+      if (art.markdown && (mdLower.includes(q) || queryWords.some(w => mdLower.includes(w)))) {
         const lines = art.markdown.split('\n');
         for (const line of lines) {
           const trimmed = line.trim();
-          if (trimmed.length > 5 && trimmed.toLowerCase().includes(q)) {
-            score += 2;
+          if (trimmed.length > 5 && (trimmed.toLowerCase().includes(q) || queryWords.some(w => trimmed.toLowerCase().includes(w)))) {
             if (!matchedSnippet) {
               matchedSnippet = trimmed
                 .replace(/^#+\s*/, '')
@@ -124,7 +147,12 @@ export default function App() {
                 .replace(/\*\*/g, '')
                 .replace(/`/g, '')
                 .replace(/\$\$/g, '')
+                .replace(/\\frac\{([^}]+)\}\{([^}]+)\}/g, '$1 / $2')
+                .replace(/\s+/g, ' ')
                 .trim();
+              if (matchedSnippet.length > 130) {
+                matchedSnippet = matchedSnippet.slice(0, 127) + '...';
+              }
             }
           }
         }
@@ -144,24 +172,34 @@ export default function App() {
 
   const theme = THEMES[themeKey];
 
-  // Toggle helpers
+  // Toggle helpers with non-intrusive save feedback
   const toggleBookmark = useCallback((id) => {
     setBookmarks((prev) => {
       const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
+      if (next.has(id)) {
+        next.delete(id);
+        showToast('Removed from Bookmarks', '☆');
+      } else {
+        next.add(id);
+        showToast('Saved to Bookmarks', '⭐');
+      }
       return next;
     });
-  }, []);
+  }, [showToast]);
 
   const toggleRead = useCallback((id) => {
     setReadArticles((prev) => {
       const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
+      if (next.has(id)) {
+        next.delete(id);
+        showToast('Marked as To-Do', '⚪');
+      } else {
+        next.add(id);
+        showToast('Marked as Done', '✅');
+      }
       return next;
     });
-  }, []);
+  }, [showToast]);
 
   const toggleTheme = useCallback(() => {
     setThemeKey((prev) => {
@@ -323,6 +361,14 @@ export default function App() {
         backgroundColor={theme.card}
         translucent={Platform.OS === 'android'}
       />
+
+      {/* Floating Save / Bookmark Toast Feedback (Top-centered, non-intrusive) */}
+      {toast ? (
+        <View style={styles.toastContainer} pointerEvents="none">
+          <Text style={{ fontSize: 14 }}>{toast.icon}</Text>
+          <Text style={styles.toastText}>{toast.message}</Text>
+        </View>
+      ) : null}
 
       {activeArticle ? (
         // ---------------- DETAIL SCREEN (READER MODE) ----------------
@@ -1797,5 +1843,265 @@ const styles = StyleSheet.create({
     fontSize: 13,
     textAlign: 'center',
     paddingHorizontal: 20,
+  },
+
+  // --- Formula Fraction & Matrix Styles ---
+  formulaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 4,
+    flexWrap: 'nowrap',
+  },
+  fractionContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: 4,
+    paddingHorizontal: 2,
+    alignSelf: 'center',
+  },
+  fractionNumerator: {
+    fontWeight: '600',
+    fontStyle: 'italic',
+    textAlign: 'center',
+    paddingBottom: 1,
+  },
+  fractionBar: {
+    height: 1.8,
+    alignSelf: 'stretch',
+    marginVertical: 2,
+    borderRadius: 1,
+  },
+  fractionDenominator: {
+    fontWeight: '600',
+    fontStyle: 'italic',
+    textAlign: 'center',
+    paddingTop: 1,
+  },
+  formulaTextToken: {
+    fontStyle: 'italic',
+    fontWeight: '500',
+    alignSelf: 'center',
+  },
+  formulaMatrixText: {
+    letterSpacing: 0.5,
+  },
+
+  // --- Search Snippet Badge ---
+  searchSnippetBadge: {
+    marginTop: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 6,
+    borderWidth: 1,
+    alignSelf: 'flex-start',
+  },
+  searchSnippetLabel: {
+    fontSize: 11.5,
+    fontWeight: 'bold',
+  },
+
+  // --- Floating Chat / Find Action Button ---
+  floatingChatBtn: {
+    position: 'absolute',
+    bottom: Platform.OS === 'android' ? 26 : 34,
+    right: 20,
+    height: 48,
+    paddingHorizontal: 16,
+    borderRadius: 24,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    zIndex: 9999,
+  },
+  floatingChatText: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+    fontSize: 13.5,
+  },
+  chatHeaderBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 18,
+    borderWidth: 1,
+  },
+  chatHeaderBtnText: {
+    fontSize: 12.5,
+    fontWeight: 'bold',
+  },
+
+  // --- Chat & Keyword Lookup Modal Styles ---
+  chatModalContainer: {
+    flex: 1,
+  },
+  chatModalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+  },
+  chatModalTitle: {
+    fontSize: 16.5,
+    fontWeight: 'bold',
+  },
+  chatModalSub: {
+    fontSize: 11.5,
+    marginTop: 2,
+  },
+  chatCloseBtn: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+  },
+  chatCloseText: {
+    fontSize: 15,
+    fontWeight: 'bold',
+  },
+  chatInputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginHorizontal: 16,
+    marginTop: 12,
+    marginBottom: 8,
+    paddingHorizontal: 12,
+    height: 46,
+    borderRadius: 12,
+    borderWidth: 1.5,
+  },
+  chatTextInput: {
+    flex: 1,
+    fontSize: 14.5,
+    paddingVertical: 0,
+  },
+  chatChipsRow: {
+    marginVertical: 8,
+    height: 42,
+  },
+  chatChip: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    marginRight: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 36,
+  },
+  chatChipText: {
+    fontSize: 12.5,
+    fontWeight: '600',
+  },
+  chatResultsList: {
+    padding: 16,
+    paddingBottom: 60,
+  },
+  chatResultCount: {
+    fontSize: 12.5,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  chatResultCard: {
+    borderRadius: 12,
+    borderWidth: 1,
+    padding: 14,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  chatResultHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  chatBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 4,
+  },
+  chatBadgeText: {
+    fontSize: 11,
+    fontWeight: 'bold',
+  },
+  chatResultArrow: {
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  chatResultTitle: {
+    fontSize: 15,
+    fontWeight: 'bold',
+    lineHeight: 21,
+    marginBottom: 8,
+  },
+  chatSnippetBox: {
+    padding: 10,
+    borderRadius: 8,
+    marginTop: 4,
+  },
+  chatSnippetLabel: {
+    fontSize: 11,
+    fontWeight: 'bold',
+    marginBottom: 3,
+  },
+  chatSnippetText: {
+    fontSize: 12.5,
+    fontStyle: 'italic',
+    lineHeight: 18,
+  },
+  chatEmptyState: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 60,
+    paddingHorizontal: 30,
+  },
+  chatEmptyTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 6,
+    textAlign: 'center',
+  },
+  chatEmptySub: {
+    fontSize: 13,
+    textAlign: 'center',
+    lineHeight: 19,
+  },
+
+  // --- Save Feedback Toast Style (High Top, Non-intrusive) ---
+  toastContainer: {
+    position: 'absolute',
+    top: STATUSBAR_HEIGHT + 14,
+    alignSelf: 'center',
+    backgroundColor: '#1E293B',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 24,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 20,
+    zIndex: 999999,
+  },
+  toastText: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '600',
   },
 });
