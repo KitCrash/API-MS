@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useRef } from 'react';
 import {
   StyleSheet,
   Text,
@@ -13,6 +13,7 @@ import {
   StatusBar,
   Dimensions,
   Platform,
+  PanResponder,
 } from 'react-native';
 
 import articlesData from './assets/cv_articles.json';
@@ -70,6 +71,76 @@ export default function App() {
   const [bookmarks, setBookmarks] = useState(new Set());
   const [readArticles, setReadArticles] = useState(new Set());
   const [modalImage, setModalImage] = useState(null);
+  const [chatModalVisible, setChatModalVisible] = useState(false);
+  const [chatQuery, setChatQuery] = useState('');
+
+  // Swipe from left edge / left side of screen to go back
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => false,
+      onMoveShouldSetPanResponder: (evt, gestureState) => {
+        // Detect swipe starting from left edge/side moving towards right
+        const fromLeft = gestureState.x0 < 100 || evt.nativeEvent.pageX < 100;
+        const isHorizontalSwipe = gestureState.dx > 30 && Math.abs(gestureState.dx) > Math.abs(gestureState.dy) * 1.3;
+        return fromLeft && isHorizontalSwipe;
+      },
+      onPanResponderRelease: (evt, gestureState) => {
+        if (gestureState.dx > 50 || gestureState.vx > 0.3) {
+          setActiveArticle(null);
+        }
+      },
+    })
+  ).current;
+
+  // Real-time Chat / Keyword search across all questions and answers
+  const chatResults = useMemo(() => {
+    if (!chatQuery.trim()) return [];
+    const q = chatQuery.toLowerCase().trim();
+    const results = [];
+
+    for (const art of articlesData) {
+      let score = 0;
+      let matchedSnippet = '';
+
+      const inTitle = art.title?.toLowerCase().includes(q);
+      const inPrompt = art.prompt?.toLowerCase().includes(q);
+      const inCategory = art.category?.toLowerCase().includes(q);
+
+      if (inTitle) score += 10;
+      if (inPrompt) score += 5;
+      if (inCategory) score += 3;
+
+      if (art.markdown) {
+        const lines = art.markdown.split('\n');
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (trimmed.length > 5 && trimmed.toLowerCase().includes(q)) {
+            score += 2;
+            if (!matchedSnippet) {
+              matchedSnippet = trimmed
+                .replace(/^#+\s*/, '')
+                .replace(/^[-*]\s*/, '')
+                .replace(/^\d+\.\s*/, '')
+                .replace(/\*\*/g, '')
+                .replace(/`/g, '')
+                .replace(/\$\$/g, '')
+                .trim();
+            }
+          }
+        }
+      }
+
+      if (score > 0) {
+        results.push({
+          article: art,
+          score,
+          snippet: matchedSnippet || art.prompt || art.title,
+        });
+      }
+    }
+
+    return results.sort((a, b) => b.score - a.score);
+  }, [chatQuery]);
 
   const theme = THEMES[themeKey];
 
@@ -225,6 +296,13 @@ export default function App() {
           </Text>
         ) : null}
 
+        {/* Search match badge if matched in answer */}
+        {searchQuery.trim() && item.markdown && item.markdown.toLowerCase().includes(searchQuery.toLowerCase().trim()) && !item.title.toLowerCase().includes(searchQuery.toLowerCase().trim()) ? (
+          <View style={[styles.searchSnippetBadge, { backgroundColor: theme.primaryBg, borderColor: theme.border }]}>
+            <Text style={[styles.searchSnippetLabel, { color: theme.primary }]}>🔍 Found in answer text</Text>
+          </View>
+        ) : null}
+
         {/* Diagram Thumbnail Preview Banner */}
         {imageSource ? (
           <View style={[styles.imageBannerContainer, { borderColor: theme.border, backgroundColor: theme.codeBg }]}>
@@ -248,7 +326,7 @@ export default function App() {
 
       {activeArticle ? (
         // ---------------- DETAIL SCREEN (READER MODE) ----------------
-        <View style={[styles.container, { backgroundColor: theme.bg }]}>
+        <View style={[styles.container, { backgroundColor: theme.bg }]} {...panResponder.panHandlers}>
           {/* Detail Nav Header */}
           <View style={[styles.detailNavBar, { borderBottomColor: theme.border, backgroundColor: theme.card }]}>
             <TouchableOpacity
@@ -429,14 +507,24 @@ export default function App() {
               </Text>
             </View>
 
-            <TouchableOpacity
-              onPress={toggleTheme}
-              style={[styles.themeToggleBtn, { backgroundColor: theme.codeBg }]}
-            >
-              <Text style={{ fontSize: 18 }}>
-                {themeKey === 'light' ? '🌙' : themeKey === 'dark' ? '📜' : '☀️'}
-              </Text>
-            </TouchableOpacity>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <TouchableOpacity
+                onPress={() => setChatModalVisible(true)}
+                style={[styles.chatHeaderBtn, { backgroundColor: theme.primaryBg, borderColor: theme.primary }]}
+              >
+                <Text style={{ fontSize: 13 }}>💬</Text>
+                <Text style={[styles.chatHeaderBtnText, { color: theme.primary }]}>Find / Q&A</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={toggleTheme}
+                style={[styles.themeToggleBtn, { backgroundColor: theme.codeBg }]}
+              >
+                <Text style={{ fontSize: 18 }}>
+                  {themeKey === 'light' ? '🌙' : themeKey === 'dark' ? '📜' : '☀️'}
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
 
           {/* Live Progress Bar */}
@@ -532,14 +620,320 @@ export default function App() {
           ) : null}
         </View>
       </Modal>
+      {/* Floating Action Button for Instant Chat / Keyword Lookup */}
+      <TouchableOpacity
+        style={[styles.floatingChatBtn, { backgroundColor: theme.primary }]}
+        onPress={() => setChatModalVisible(true)}
+        activeOpacity={0.85}
+      >
+        <Text style={{ fontSize: 22 }}>💬</Text>
+        <Text style={styles.floatingChatText}>Find</Text>
+      </TouchableOpacity>
+
+      {/* Chat & Keyword Lookup Modal */}
+      <Modal
+        visible={chatModalVisible}
+        animationType="slide"
+        onRequestClose={() => setChatModalVisible(false)}
+      >
+        <SafeAreaView style={[styles.chatModalContainer, { backgroundColor: theme.bg }]}>
+          {/* Modal Header */}
+          <View style={[styles.chatModalHeader, { backgroundColor: theme.card, borderBottomColor: theme.border }]}>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.chatModalTitle, { color: theme.text }]}>💬 Smart Keyword & Question Finder</Text>
+              <Text style={[styles.chatModalSub, { color: theme.textMuted }]}>
+                Search any concept, formula, or keyword across all 48 Q&As
+              </Text>
+            </View>
+            <TouchableOpacity
+              onPress={() => setChatModalVisible(false)}
+              style={[styles.chatCloseBtn, { backgroundColor: theme.codeBg }]}
+            >
+              <Text style={[styles.chatCloseText, { color: theme.text }]}>✕</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Search Input Box */}
+          <View style={[styles.chatInputWrapper, { backgroundColor: theme.card, borderColor: theme.primary }]}>
+            <Text style={{ fontSize: 16, marginRight: 8 }}>🔍</Text>
+            <TextInput
+              style={[styles.chatTextInput, { color: theme.text }]}
+              placeholder="Type keyword: Ncut, Canny, SIFT, Viola-Jones..."
+              placeholderTextColor={theme.textMuted}
+              value={chatQuery}
+              onChangeText={setChatQuery}
+              autoFocus
+              autoCorrect={false}
+              autoCapitalize="none"
+            />
+            {chatQuery ? (
+              <TouchableOpacity onPress={() => setChatQuery('')} hitSlop={8}>
+                <Text style={{ color: theme.textMuted, fontSize: 15, paddingHorizontal: 6 }}>✕</Text>
+              </TouchableOpacity>
+            ) : null}
+          </View>
+
+          {/* Quick Keyword Suggestion Chips */}
+          <View style={styles.chatChipsRow}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16 }}>
+              {['Ncut', 'Canny', 'SIFT', 'Viola-Jones', 'SURF', 'Homography', 'Triangulation', 'Histogram', 'Graph Cut', 'Eigenfaces'].map((chip) => (
+                <TouchableOpacity
+                  key={chip}
+                  onPress={() => setChatQuery(chip)}
+                  style={[
+                    styles.chatChip,
+                    {
+                      backgroundColor: chatQuery.toLowerCase() === chip.toLowerCase() ? theme.primary : theme.codeBg,
+                      borderColor: theme.border,
+                    },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.chatChipText,
+                      { color: chatQuery.toLowerCase() === chip.toLowerCase() ? '#FFFFFF' : theme.text },
+                    ]}
+                  >
+                    {chip}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+
+          {/* Search Results List */}
+          <FlatList
+            data={chatResults}
+            keyExtractor={(item) => String(item.article.id)}
+            contentContainerStyle={styles.chatResultsList}
+            keyboardShouldPersistTaps="handled"
+            ListHeaderComponent={
+              chatQuery.trim() ? (
+                <Text style={[styles.chatResultCount, { color: theme.textMuted }]}>
+                  Found {chatResults.length} matching {chatResults.length === 1 ? 'question' : 'questions'}:
+                </Text>
+              ) : null
+            }
+            ListEmptyComponent={
+              <View style={styles.chatEmptyState}>
+                <Text style={{ fontSize: 36, marginBottom: 12 }}>{chatQuery.trim() ? '🔍' : '💡'}</Text>
+                <Text style={[styles.chatEmptyTitle, { color: theme.text }]}>
+                  {chatQuery.trim() ? 'No matching questions found' : 'Find Any Keyword Instantly'}
+                </Text>
+                <Text style={[styles.chatEmptySub, { color: theme.textMuted }]}>
+                  {chatQuery.trim()
+                    ? `No questions or answers matched "${chatQuery}". Try searching another concept.`
+                    : 'Tap any suggestion above or type a keyword to jump directly to that exact question and answer.'}
+                </Text>
+              </View>
+            }
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={() => {
+                  setChatModalVisible(false);
+                  setActiveArticle(item.article);
+                }}
+                style={[
+                  styles.chatResultCard,
+                  { backgroundColor: theme.card, borderColor: theme.border },
+                ]}
+              >
+                <View style={styles.chatResultHeader}>
+                  <View style={[styles.chatBadge, { backgroundColor: theme.primaryBg }]}>
+                    <Text style={[styles.chatBadgeText, { color: theme.primary }]}>
+                      {item.article.category}
+                    </Text>
+                  </View>
+                  <Text style={[styles.chatResultArrow, { color: theme.primary }]}>
+                    Open Question →
+                  </Text>
+                </View>
+
+                <Text style={[styles.chatResultTitle, { color: theme.text }]}>
+                  {item.article.title}
+                </Text>
+
+                {item.snippet ? (
+                  <View style={[styles.chatSnippetBox, { backgroundColor: theme.codeBg }]}>
+                    <Text style={[styles.chatSnippetLabel, { color: theme.primary }]}>Found in text:</Text>
+                    <Text style={[styles.chatSnippetText, { color: theme.text }]} numberOfLines={3}>
+                      "{item.snippet}"
+                    </Text>
+                  </View>
+                ) : null}
+              </TouchableOpacity>
+            )}
+          />
+        </SafeAreaView>
+      </Modal>
     </SafeAreaView>
+  );
+}
+
+function cleanLatexSymbols(text) {
+  if (!text) return '';
+  return text
+    .replace(/\\quad/g, '   ')
+    .replace(/\\times/g, '×')
+    .replace(/\\cdot/g, '·')
+    .replace(/\\in/g, '∈')
+    .replace(/\\mathbb\{R\}/g, 'ℝ')
+    .replace(/\\pi/g, 'π')
+    .replace(/\\theta/g, 'θ')
+    .replace(/\\rho/g, 'ρ')
+    .replace(/\\alpha/g, 'α')
+    .replace(/\\sigma/g, 'σ')
+    .replace(/\\lambda/g, 'λ')
+    .replace(/\\mathbf\{([^}]+)\}/g, '$1')
+    .replace(/\\tilde\{([^}]+)\}/g, '$1̃')
+    .replace(/\\left\(/g, '(')
+    .replace(/\\right\)/g, ')')
+    .replace(/\\sum/g, '∑')
+    .replace(/\\sqrt/g, '√');
+}
+
+// ---------------- FORMULA TOKEN PARSER & STACKED FRACTION RENDERER ----------------
+function parseFormulaTokens(rawLine) {
+  let s = cleanLatexSymbols(rawLine);
+
+  // Convert \frac{A}{B} to internal marker [[FRAC:A|B]]
+  s = s.replace(/\\frac\{([^{}]+)\}\{([^{}]+)\}/g, '[[FRAC:$1|$2]]');
+
+  // Convert (A / B) to [[FRAC:A|B]]
+  s = s.replace(/\(([^\/]+?)\s*\/\s*([^\/]+?)\)/g, '[[FRAC:$1|$2]]');
+
+  const tokens = [];
+  const fracRegex = /\[\[FRAC:([^\|]+)\|([^\]]+)\]\]/g;
+  let lastIdx = 0;
+  let match;
+
+  while ((match = fracRegex.exec(s)) !== null) {
+    if (match.index > lastIdx) {
+      tokens.push({ type: 'text', value: s.substring(lastIdx, match.index) });
+    }
+    tokens.push({ type: 'fraction', num: match[1].trim(), den: match[2].trim() });
+    lastIdx = fracRegex.lastIndex;
+  }
+
+  if (lastIdx < s.length) {
+    tokens.push({ type: 'text', value: s.substring(lastIdx) });
+  }
+
+  return tokens.length > 0 ? tokens : [{ type: 'text', value: s }];
+}
+
+function renderFormulaContent(content, theme, fontScale) {
+  const cleanContent = content
+    .replace(/^\s*\$+\s*/g, '')
+    .replace(/\s*\$+\s*$/g, '')
+    .trim();
+
+  if (!cleanContent) return null;
+
+  const lines = cleanContent.split('\n');
+
+  return (
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={{ paddingVertical: 4, paddingHorizontal: 2 }}
+    >
+      <View style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
+        {lines.map((rawLine, lIdx) => {
+          const trimmedLine = rawLine.trim();
+          if (!trimmedLine) return null;
+
+          // Matrix line
+          if (trimmedLine.includes('⎡') || trimmedLine.includes('⎢') || trimmedLine.includes('⎣')) {
+            return (
+              <Text
+                key={`mat-${lIdx}`}
+                style={[
+                  styles.formulaMatrixText,
+                  {
+                    color: theme.text,
+                    fontSize: 13.5 * fontScale,
+                    lineHeight: 22 * fontScale,
+                    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+                  },
+                ]}
+              >
+                {rawLine}
+              </Text>
+            );
+          }
+
+          const tokens = parseFormulaTokens(trimmedLine);
+
+          return (
+            <View key={`frow-${lIdx}`} style={styles.formulaRow}>
+              {tokens.map((tok, tIdx) => {
+                if (tok.type === 'fraction') {
+                  return (
+                    <View key={`ffrac-${lIdx}-${tIdx}`} style={styles.fractionContainer}>
+                      <Text
+                        style={[
+                          styles.fractionNumerator,
+                          {
+                            color: theme.text,
+                            fontSize: 13 * fontScale,
+                            fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+                          },
+                        ]}
+                      >
+                        {tok.num}
+                      </Text>
+                      <View
+                        style={[
+                          styles.fractionBar,
+                          { backgroundColor: theme.primary },
+                        ]}
+                      />
+                      <Text
+                        style={[
+                          styles.fractionDenominator,
+                          {
+                            color: theme.text,
+                            fontSize: 13 * fontScale,
+                            fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+                          },
+                        ]}
+                      >
+                        {tok.den}
+                      </Text>
+                    </View>
+                  );
+                }
+
+                return (
+                  <Text
+                    key={`ftxt-${lIdx}-${tIdx}`}
+                    style={[
+                      styles.formulaTextToken,
+                      {
+                        color: theme.text,
+                        fontSize: 14 * fontScale,
+                        fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+                      },
+                    ]}
+                  >
+                    {tok.value}
+                  </Text>
+                );
+              })}
+            </View>
+          );
+        })}
+      </View>
+    </ScrollView>
   );
 }
 
 // ---------------- INLINE MARKDOWN PARSER (BOLD, ITALIC, CODE, MATH) ----------------
 function renderInlineText(rawText, baseStyle, theme) {
   if (!rawText) return null;
-  const sanitizedText = rawText.replace(/<br\s*\/?>/gi, ' ');
+  const sanitizedText = cleanLatexSymbols(rawText.replace(/<br\s*\/?>/gi, ' '));
 
   const tokens = [];
   const regex = /(\*\*[\s\S]+?\*\*|`[^`]+`|\*[^\*]+?\*|\$[^\$]+?\$)/g;
@@ -757,7 +1151,7 @@ function FormattedContent({ content, theme, fontScale }) {
       continue;
     }
 
-    // Helper to render an elevated Mathematical Formula Block Box
+    // Helper to render an elevated Mathematical Formula Block Box with stacked fraction bars
     const createFormulaBox = (content, keyIndex) => {
       const cleanContent = content
         .replace(/^\s*\$+\s*/g, '')
@@ -784,11 +1178,7 @@ function FormattedContent({ content, theme, fontScale }) {
               <Text style={[styles.formulaLabel, { color: theme.primary }]}>Mathematical Formula</Text>
             </View>
           </View>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingVertical: 2 }}>
-            <Text style={[styles.formulaContent, { color: theme.text, fontSize: 14 * fontScale }]}>
-              {cleanContent}
-            </Text>
-          </ScrollView>
+          {renderFormulaContent(cleanContent, theme, fontScale)}
         </View>
       );
     };
