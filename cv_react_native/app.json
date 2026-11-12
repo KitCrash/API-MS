@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Computer Vision Exam Prep",
-    "slug": "computer-vision-exam-prep",
+    "name": "Machine Learning Exam Prep",
+    "slug": "machine-learning-exam-prep",
     "version": "1.0.0",
     "orientation": "default",
     "icon": "./assets/icon.png",
@@ -16,7 +16,8 @@
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#0284c7"
-      }
+      },
+      "package": "com.anonymous.computervisionexamprep"
     },
     "web": {
       "favicon": "./assets/favicon.png"

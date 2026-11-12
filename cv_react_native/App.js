@@ -211,12 +211,12 @@ export default function App() {
 
   // Filter options
   const filterTabs = [
-    { id: 'all', label: 'All Topics (48)' },
-    { id: 'u1', label: 'Unit 1 (12)', unit: 1 },
-    { id: 'u2', label: 'Unit 2 (11)', unit: 2 },
-    { id: 'u3', label: 'Unit 3 (7)', unit: 3 },
-    { id: 'u4', label: 'Unit 4 (9)', unit: 4 },
-    { id: 'u5', label: 'Unit 5 (8)', unit: 5 },
+    { id: 'all', label: 'All Topics (59)' },
+    { id: 'u1', label: 'Unit 1 (11)', unit: 1 },
+    { id: 'u2', label: 'Unit 2 (12)', unit: 2 },
+    { id: 'u3', label: 'Unit 3 (11)', unit: 3 },
+    { id: 'u4', label: 'Unit 4 (12)', unit: 4 },
+    { id: 'u5', label: 'Unit 5 (12)', unit: 5 },
     { id: 'recap', label: '⚡ Recaps (5)' },
     { id: 'short', label: '✏️ 2-Marks (5)' },
     { id: 'matrix', label: '📊 Master Matrix' },
@@ -547,7 +547,7 @@ export default function App() {
           {/* Main App Bar */}
           <View style={[styles.appBar, { borderBottomColor: theme.border, backgroundColor: theme.card }]}>
             <View>
-              <Text style={[styles.appTitle, { color: theme.text }]}>🚀 Computer Vision Hub</Text>
+              <Text style={[styles.appTitle, { color: theme.text }]}>🚀 Machine Learning Hub</Text>
               <Text style={[styles.appSubtitle, { color: theme.textMuted }]}>
                 5 Units • 48 Topics • Master Exam Preparation
               </Text>
@@ -704,7 +704,7 @@ export default function App() {
             <Text style={{ fontSize: 16, marginRight: 8 }}>🔍</Text>
             <TextInput
               style={[styles.chatTextInput, { color: theme.text }]}
-              placeholder="Type keyword: Ncut, Canny, SIFT, Viola-Jones..."
+              placeholder="Type keyword: Find-S, SVM, DBSCAN, AdaBoost..."
               placeholderTextColor={theme.textMuted}
               value={chatQuery}
               onChangeText={setChatQuery}
@@ -722,7 +722,7 @@ export default function App() {
           {/* Quick Keyword Suggestion Chips */}
           <View style={styles.chatChipsRow}>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16 }}>
-              {['Ncut', 'Canny', 'SIFT', 'Viola-Jones', 'SURF', 'Homography', 'Triangulation', 'Histogram', 'Graph Cut', 'Eigenfaces'].map((chip) => (
+              {['Find-S', 'Candidate Elimination', 'Naive Bayes', 'Linear Regression', 'Logistic Regression', 'SVM', 'Kernel', 'ROC Curve', 'K-Means', 'DBSCAN', 'Random Forest', 'AdaBoost', 'VC Dimension', 'Overfitting'].map((chip) => (
                 <TouchableOpacity
                   key={chip}
                   onPress={() => setChatQuery(chip)}
@@ -820,22 +820,57 @@ export default function App() {
 function cleanLatexSymbols(text) {
   if (!text) return '';
   return text
+    .replace(/\\boxed\{([^{}]+)\}/g, '$1')
+    .replace(/\\operatorname\{([^}]+)\}/g, '$1')
+    .replace(/\\text\{([^}]+)\}/g, '$1')
+    .replace(/\\mathbf\{([^}]+)\}/g, '$1')
+    .replace(/\\mathbb\{R\}/g, 'ℝ')
+    .replace(/\\tilde\{([^}]+)\}/g, '$1̃')
+    .replace(/\\hat\{([^}]+)\}/g, '$1̂')
+    .replace(/\\bar\{([^}]+)\}/g, '$1̄')
+    .replace(/\\vec\{([^}]+)\}/g, '$1⃗')
     .replace(/\\quad/g, '   ')
     .replace(/\\times/g, '×')
     .replace(/\\cdot/g, '·')
     .replace(/\\in/g, '∈')
-    .replace(/\\mathbb\{R\}/g, 'ℝ')
     .replace(/\\pi/g, 'π')
     .replace(/\\theta/g, 'θ')
     .replace(/\\rho/g, 'ρ')
     .replace(/\\alpha/g, 'α')
+    .replace(/\\beta/g, 'β')
+    .replace(/\\gamma/g, 'γ')
+    .replace(/\\delta/g, 'δ')
+    .replace(/\\epsilon/g, 'ε')
+    .replace(/\\varepsilon/g, 'ε')
     .replace(/\\sigma/g, 'σ')
     .replace(/\\lambda/g, 'λ')
-    .replace(/\\mathbf\{([^}]+)\}/g, '$1')
-    .replace(/\\tilde\{([^}]+)\}/g, '$1̃')
+    .replace(/\\mu/g, 'μ')
+    .replace(/\\xi/g, 'ξ')
+    .replace(/\\phi/g, 'φ')
+    .replace(/\\Phi/g, 'Φ')
+    .replace(/\\emptyset/g, '∅')
+    .replace(/\\leq/g, '≤')
+    .replace(/\\le\b/g, '≤')
+    .replace(/\\geq/g, '≥')
+    .replace(/\\ge\b/g, '≥')
+    .replace(/\\neq/g, '≠')
+    .replace(/\\approx/g, '≈')
+    .replace(/\\propto/g, '∝')
+    .replace(/\\infty/g, '∞')
+    .replace(/\\cdots/g, '...')
+    .replace(/\\dots/g, '...')
+    .replace(/\\langle/g, '⟨')
+    .replace(/\\rangle/g, '⟩')
     .replace(/\\left\(/g, '(')
     .replace(/\\right\)/g, ')')
+    .replace(/\\left\[/g, '[')
+    .replace(/\\right\]/g, ']')
+    .replace(/\\left\\\{/g, '{')
+    .replace(/\\right\\\}/g, '}')
+    .replace(/\\ln/g, 'ln')
+    .replace(/\\exp/g, 'exp')
     .replace(/\\sum/g, '∑')
+    .replace(/\\prod/g, '∏')
     .replace(/\\sqrt/g, '√');
 }
 
@@ -846,8 +881,13 @@ function parseFormulaTokens(rawLine) {
   // Convert \frac{A}{B} to internal marker [[FRAC:A|B]]
   s = s.replace(/\\frac\{([^{}]+)\}\{([^{}]+)\}/g, '[[FRAC:$1|$2]]');
 
-  // Convert (A / B) to [[FRAC:A|B]]
-  s = s.replace(/\(([^\/]+?)\s*\/\s*([^\/]+?)\)/g, '[[FRAC:$1|$2]]');
+  // Convert (A / B) to [[FRAC:A|B]] — restrict to short, simple operands only
+  s = s.replace(/\(([^\(\)\/\=\n\,]{1,25}?)\s*\/\s*([^\(\)\/\=\n\,]{1,25}?)\)/g, (match, num, den) => {
+    // Skip if operands are complex expressions
+    if (num.trim().length > 20 || den.trim().length > 20) return match;
+    if (/[∑∏]/.test(num) || /[∑∏]/.test(den)) return match;
+    return `[[FRAC:${num.trim()}|${den.trim()}]]`;
+  });
 
   const tokens = [];
   const fracRegex = /\[\[FRAC:([^\|]+)\|([^\]]+)\]\]/g;
@@ -871,8 +911,9 @@ function parseFormulaTokens(rawLine) {
 
 function renderFormulaContent(content, theme, fontScale) {
   const cleanContent = content
-    .replace(/^\s*\$+\s*/g, '')
-    .replace(/\s*\$+\s*$/g, '')
+    .replace(/^\s*(\$\$|\\\[|\$+)\s*/g, '')
+    .replace(/\s*(\$\$|\\\]|\$+)\s*$/g, '')
+    .replace(/\\boxed\{([^{}]+)\}/g, '$1')
     .trim();
 
   if (!cleanContent) return null;
@@ -982,7 +1023,7 @@ function renderInlineText(rawText, baseStyle, theme) {
   const sanitizedText = cleanLatexSymbols(rawText.replace(/<br\s*\/?>/gi, ' '));
 
   const tokens = [];
-  const regex = /(\*\*[\s\S]+?\*\*|`[^`]+`|\*[^\*]+?\*|\$[^\$]+?\$)/g;
+  const regex = /(\*\*[\s\S]+?\*\*|`[^`]+`|\*[^\*]+?\*|\$[^\$]+?\$|\\\([^\)]+?\\\))/g;
   let lastIndex = 0;
   let match;
 
@@ -997,6 +1038,8 @@ function renderInlineText(rawText, baseStyle, theme) {
       tokens.push({ type: 'code', val: token.slice(1, -1) });
     } else if (token.startsWith('$') && token.endsWith('$') && token.length >= 2) {
       tokens.push({ type: 'math', val: token.slice(1, -1) });
+    } else if (token.startsWith('\\(') && token.endsWith('\\)') && token.length >= 4) {
+      tokens.push({ type: 'math', val: token.slice(2, -2).trim() });
     } else if (token.startsWith('*') && token.endsWith('*') && token.length >= 2) {
       tokens.push({ type: 'italic', val: token.slice(1, -1) });
     }
@@ -1107,8 +1150,55 @@ function FormattedContent({ content, theme, fontScale }) {
       continue;
     }
 
-    // Skip redundant web tags and stray standalone dollar signs
-    if (trimmed.startsWith('<AsyncImage') || trimmed.includes('<AsyncImage') || trimmed === '<br>' || trimmed === '$' || trimmed === '$$') {
+    // Skip redundant web tags (NOT standalone $$ or \[ — those are formula delimiters)
+    if (trimmed.startsWith('<AsyncImage') || trimmed.includes('<AsyncImage') || trimmed === '<br>' || trimmed.startsWith('<HomeworkHelper') || trimmed.startsWith('<LearningViz')) {
+      continue;
+    }
+
+    // Custom Badge tag: <badge color="success">Final Answer</badge>
+    if (trimmed.startsWith('<badge') || trimmed.includes('<badge')) {
+      const badgeMatch = trimmed.match(/<badge(?:\s+color=["']([^"']+)["'])?>([\s\S]*?)<\/badge>/);
+      if (badgeMatch) {
+        const bColor = badgeMatch[1] || 'success';
+        const bText = badgeMatch[2].trim();
+        let bg = '#DCFCE7', fg = '#166534', bc = '#86EFAC';
+        if (bColor === 'info') { bg = '#E0F2FE'; fg = '#0369A1'; bc = '#7DD3FC'; }
+        else if (bColor === 'danger') { bg = '#FEE2E2'; fg = '#991B1B'; bc = '#FCA5A5'; }
+        else if (bColor === 'warning') { bg = '#FEF3C7'; fg = '#92400E'; bc = '#FCD34D'; }
+
+        elements.push(
+          <View key={`badge-${i}`} style={{ flexDirection: 'row', marginVertical: 6 }}>
+            <View style={{ backgroundColor: bg, borderColor: bc, borderWidth: 1, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 }}>
+              <Text style={{ color: fg, fontWeight: 'bold', fontSize: 12 * fontScale }}>{bText}</Text>
+            </View>
+          </View>
+        );
+        continue;
+      }
+    }
+
+    // Custom Title tag: <title size="xl" color="success">C1, C2, C3, C4</title>
+    if (trimmed.startsWith('<title') || trimmed.includes('<title')) {
+      const titleMatch = trimmed.match(/<title(?:\s+[^>]*?)?>([\s\S]*?)<\/title>/);
+      if (titleMatch) {
+        const isSuccess = trimmed.includes('success');
+        const isDanger = trimmed.includes('danger');
+        const isInfo = trimmed.includes('info');
+        const tColor = isSuccess ? '#16A34A' : (isDanger ? '#DC2626' : (isInfo ? '#0284C7' : theme.text));
+        elements.push(
+          <Text key={`title-tag-${i}`} style={{ color: tColor, fontSize: 17 * fontScale, fontWeight: 'bold', marginVertical: 4 }}>
+            {titleMatch[1].trim()}
+          </Text>
+        );
+        continue;
+      }
+    }
+
+    // Divider tag: <divider ... />
+    if (trimmed.startsWith('<divider') || trimmed.includes('<divider')) {
+      elements.push(
+        <View key={`div-${i}`} style={{ height: 1, backgroundColor: theme.border, marginVertical: 8 }} />
+      );
       continue;
     }
 
@@ -1229,22 +1319,34 @@ function FormattedContent({ content, theme, fontScale }) {
       );
     };
 
-    // Multi-line or single-line Formula Block detection ($$ ... $$)
-    if (trimmed.startsWith('$$')) {
+    // Multi-line or single-line Formula Block detection ($$ ... $$ OR \[ ... \] OR \begin{...})
+    if (trimmed === '$$' || trimmed.startsWith('$$') || trimmed === '\\[' || trimmed.startsWith('\\[') || trimmed.startsWith('\\begin{')) {
       const formulaLines = [];
-      let fContent = trimmed.slice(2);
-      if (fContent.endsWith('$$') && fContent.length >= 2) {
-        formulaLines.push(fContent.slice(0, -2).trim());
-      } else {
-        if (fContent.trim()) formulaLines.push(fContent.trim());
+      const isBracket = trimmed === '\\[' || trimmed.startsWith('\\[');
+      const isBegin = trimmed.startsWith('\\begin{');
+      const closeToken = isBracket ? '\\]' : (isBegin ? '\\end{' : '$$');
+
+      if (trimmed === '$$' || trimmed === '\\[') {
         i++;
-        while (i < lines.length && !lines[i].trim().endsWith('$$') && !lines[i].trim().startsWith('$$')) {
+        while (i < lines.length && lines[i].trim() !== closeToken && !(isBracket && lines[i].trim().includes('\\]'))) {
           formulaLines.push(lines[i]);
           i++;
         }
-        if (i < lines.length) {
-          const endTrim = lines[i].trim().replace(/\$\$/g, '').trim();
-          if (endTrim) formulaLines.push(endTrim);
+      } else {
+        let fContent = isBracket ? trimmed.slice(2) : (isBegin ? trimmed : trimmed.slice(2));
+        if (fContent.endsWith(closeToken) && fContent.length >= closeToken.length) {
+          formulaLines.push(fContent.slice(0, -closeToken.length).trim());
+        } else {
+          if (fContent.trim()) formulaLines.push(fContent.trim());
+          i++;
+          while (i < lines.length && !lines[i].trim().endsWith(closeToken) && lines[i].trim() !== closeToken && !(isBracket && lines[i].trim().includes('\\]')) && !(isBegin && lines[i].trim().includes('\\end{'))) {
+            formulaLines.push(lines[i]);
+            i++;
+          }
+          if (i < lines.length) {
+            const endTrim = lines[i].trim().replace(/\$\$|\\\[|\\\]/g, '').trim();
+            if (endTrim) formulaLines.push(endTrim);
+          }
         }
       }
 
@@ -1268,8 +1370,8 @@ function FormattedContent({ content, theme, fontScale }) {
       continue;
     }
 
-    if (trimmed.includes('$$') || trimmed.startsWith('Formula:') || trimmed.startsWith('Equation:') || trimmed.startsWith('Expression:')) {
-      const cleanFormula = trimmed.replace(/\$\$/g, '').replace(/^(Formula|Equation|Expression):\s*/i, '').trim();
+    if (trimmed.includes('$$') || trimmed.includes('\\[') || trimmed.startsWith('Formula:') || trimmed.startsWith('Equation:') || trimmed.startsWith('Expression:')) {
+      const cleanFormula = trimmed.replace(/\$\$|\\\[|\\\]/g, '').replace(/^(Formula|Equation|Expression):\s*/i, '').trim();
       if (cleanFormula) {
         elements.push(createFormulaBox(cleanFormula, i));
       }
