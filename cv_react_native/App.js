@@ -1243,70 +1243,86 @@ function FormattedContent({ content, theme, fontScale }) {
       if (tableLines.length > 0) {
         const headerCells = tableLines[0];
         const bodyRows = tableLines.slice(1);
-        const isTwoCol = headerCells.length === 2;
-        const colMinWidth = isTwoCol ? Math.max(160, Math.floor((SCREEN_WIDTH - 64) / 2)) : 130;
+        const colCount = headerCells.length;
+        const isTwoCol = colCount === 2;
 
-        elements.push(
-          <ScrollView
-            key={`tbl-${i}`}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={styles.tableScrollWrapper}
-          >
-            <View style={[styles.tableContainer, { borderColor: theme.border, backgroundColor: theme.card }]}>
-              <View style={[styles.tableHeaderRow, { backgroundColor: theme.primaryBg, borderBottomColor: theme.primary, borderBottomWidth: 2 }]}>
-                {headerCells.map((h, hIdx) => (
+        const tableComponent = (
+          <View style={[styles.tableContainer, { width: '100%', borderColor: theme.border, backgroundColor: theme.card }]}>
+            <View style={[styles.tableHeaderRow, { backgroundColor: theme.primaryBg, borderBottomColor: theme.primary, borderBottomWidth: 2 }]}>
+              {headerCells.map((h, hIdx) => (
+                <View
+                  key={`th-${hIdx}`}
+                  style={[
+                    styles.tableCell,
+                    isTwoCol ? { flex: 1 } : { minWidth: Math.max(105, Math.floor((SCREEN_WIDTH - 64) / colCount)) },
+                    {
+                      borderRightWidth: hIdx < colCount - 1 ? 1.2 : 0,
+                      borderRightColor: theme.border,
+                      paddingVertical: 10,
+                      paddingHorizontal: 10,
+                    },
+                  ]}
+                >
+                  <Text style={[styles.tableHeaderText, { color: theme.text, fontSize: (isTwoCol ? 13 : 12.5) * fontScale }]}>
+                    {h}
+                  </Text>
+                </View>
+              ))}
+            </View>
+            {bodyRows.map((row, rIdx) => (
+              <View
+                key={`tr-${rIdx}`}
+                style={[
+                  styles.tableBodyRow,
+                  {
+                    borderBottomColor: theme.border,
+                    borderBottomWidth: rIdx < bodyRows.length - 1 ? 1 : 0,
+                    backgroundColor: rIdx % 2 === 0 ? theme.card : theme.codeBg,
+                  },
+                ]}
+              >
+                {row.map((cell, cIdx) => (
                   <View
-                    key={`th-${hIdx}`}
+                    key={`td-${cIdx}`}
                     style={[
                       styles.tableCell,
+                      isTwoCol ? { flex: 1 } : { minWidth: Math.max(105, Math.floor((SCREEN_WIDTH - 64) / colCount)) },
                       {
-                        minWidth: colMinWidth,
-                        borderRightWidth: hIdx < headerCells.length - 1 ? 1.2 : 0,
+                        borderRightWidth: cIdx < colCount - 1 ? 1.2 : 0,
                         borderRightColor: theme.border,
+                        paddingVertical: 10,
+                        paddingHorizontal: 10,
                       },
                     ]}
                   >
-                    <Text style={[styles.tableHeaderText, { color: theme.text, fontSize: 13.5 * fontScale }]}>
-                      {h}
+                    <Text style={[styles.tableCellText, { color: theme.text, fontSize: (isTwoCol ? 12.5 : 12) * fontScale, lineHeight: 18 * fontScale }]}>
+                      {renderInlineText(cell, { color: theme.text, fontSize: (isTwoCol ? 12.5 : 12) * fontScale }, theme)}
                     </Text>
                   </View>
                 ))}
               </View>
-              {bodyRows.map((row, rIdx) => (
-                <View
-                  key={`tr-${rIdx}`}
-                  style={[
-                    styles.tableBodyRow,
-                    {
-                      borderBottomColor: theme.border,
-                      borderBottomWidth: rIdx < bodyRows.length - 1 ? 1 : 0,
-                      backgroundColor: rIdx % 2 === 0 ? theme.card : theme.codeBg,
-                    },
-                  ]}
-                >
-                  {row.map((cell, cIdx) => (
-                    <View
-                      key={`td-${cIdx}`}
-                      style={[
-                        styles.tableCell,
-                        {
-                          minWidth: colMinWidth,
-                          borderRightWidth: cIdx < row.length - 1 ? 1.2 : 0,
-                          borderRightColor: theme.border,
-                        },
-                      ]}
-                    >
-                      <Text style={[styles.tableCellText, { color: theme.text, fontSize: 13.5 * fontScale }]}>
-                        {renderInlineText(cell, { color: theme.text, fontSize: 13.5 * fontScale }, theme)}
-                      </Text>
-                    </View>
-                  ))}
-                </View>
-              ))}
-            </View>
-          </ScrollView>
+            ))}
+          </View>
         );
+
+        if (isTwoCol) {
+          elements.push(
+            <View key={`tbl-${i}`} style={[styles.tableScrollWrapper, { width: '100%' }]}>
+              {tableComponent}
+            </View>
+          );
+        } else {
+          elements.push(
+            <ScrollView
+              key={`tbl-${i}`}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={styles.tableScrollWrapper}
+            >
+              {tableComponent}
+            </ScrollView>
+          );
+        }
       }
       continue;
     }
