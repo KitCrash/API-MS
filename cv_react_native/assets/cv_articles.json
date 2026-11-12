@@ -108,23 +108,33 @@
     "displayIndex": 9
   },
   {
-    "id": "1-10",
+    "id": 10,
     "unit": "Unit 1",
     "title": "Unit 1 • Q10. Differentiate Between Supervised Learning and Unsupervised Learning",
-    "prompt": "Differentiate between Supervised Learning and Unsupervised Learning with a comprehensive comparison table.",
+    "prompt": "Differentiate between Supervised Learning and Unsupervised Learning with a comprehensive comparison table and key characteristics.",
     "markdown": "## 10. Differentiate between Supervised Learning and Unsupervised Learning\n\n### 1. Introduction\n\nSupervised Learning and Unsupervised Learning represent the two foundational paradigms in Machine Learning. They differ primarily in the nature of the training data provided to the algorithm, their learning objectives, and how model performance is evaluated.\n\n### 2. Comprehensive Comparison Table\n\n| S.No. | Comparison Parameter | Supervised Learning | Unsupervised Learning |\n|---|---|---|---|\n| 1. | **Training Data** | Uses **labelled data** containing both input features and ground-truth output labels $(x_i, y_i)$. | Uses **unlabelled data** consisting only of input features without ground-truth output labels $(x_i)$. |\n| 2. | **Primary Objective** | Learns a mapping function $f: X \\to Y$ to predict target outputs for new, unseen inputs. | Discovers inherent patterns, underlying structures, groupings, or distributions within the input data. |\n| 3. | **Nature of Feedback** | Direct supervision via feedback comparing model predictions with true target labels. | No direct feedback or teacher; self-guided pattern discovery based on mathematical similarities. |\n| 4. | **Core Tasks** | **Classification** (discrete labels) and **Regression** (continuous numerical values). | **Clustering** (grouping), **Dimensionality Reduction**, and **Association Rule Mining**. |\n| 5. | **Evaluation Metrics** | Accuracy, Precision, Recall, F1-Score, Mean Squared Error (MSE), Mean Absolute Error (MAE), $R^2$. | Silhouette Coefficient, Davies-Bouldin Index, Within-Cluster Sum of Squares (WCSS), Inertia. |\n| 6. | **Input-Output Mapping** | Known input-output relationship established during training. | No predefined output targets; relationships are discovered internally. |\n| 7. | **Algorithms** | Linear Regression, Logistic Regression, Decision Trees, Random Forest, Support Vector Machines (SVM). | K-Means Clustering, Hierarchical Clustering, DBSCAN, Principal Component Analysis (PCA), Apriori. |\n| 8. | **Real-World Examples** | House-price prediction, email spam classification, medical disease diagnosis, loan approval. | Customer segmentation, market basket analysis, anomaly/fraud pattern detection, document topic clustering. |\n| 9. | **Computational Focus** | Minimizing empirical prediction error or loss function on unseen test sets. | Optimizing geometric distance, density connectivity, or variance explanation. |\n| 10. | **User Intervention** | High intervention required initially for data labelling and ground-truth annotation. | Low intervention required; operates directly on raw, uncurated input feature sets. |\n\n### 3. Conclusion\n\nSupervised learning is suitable when historical outcomes are known and the goal is accurate predictive forecasting. Unsupervised learning is essential for exploratory data analysis, discovering customer segments, and detecting novel patterns in unlabelled datasets.",
-    "displayIndex": 10
+    "displayIndex": 10,
+    "category": "Unit 1",
+    "unit_num": 1,
+    "section_type": "long_answer",
+    "read_time": "~4 min",
+    "image_file": null
   },
   {
-    "id": "1-11",
+    "id": 11,
     "unit": "Unit 1",
     "title": "Unit 1 • Q11. Differentiate Between Statistical Learning and Machine Learning",
-    "prompt": "Differentiate between Statistical Learning and Machine Learning with a comprehensive comparison table and accuracy note.",
+    "prompt": "Differentiate between Statistical Learning and Machine Learning with comparison points and the Accuracy vs Interpretability trade-off.",
     "markdown": "## 11. Differentiate between Statistical Learning and Machine Learning\n\n### 1. Introduction\n\n**Statistical Learning** and **Machine Learning** are closely related fields that both develop methods for learning from data. While they share many core mathematical foundations and algorithms, they developed from different disciplines and differ in their primary philosophical emphasis, assumptions, and validation methodologies.\n\n### 2. Comprehensive Comparison Table\n\n| S.No. | Comparison Parameter | Statistical Learning | Machine Learning |\n|---|---|---|---|\n| 1. | **Primary Focus & Objective** | Emphasizes **inference**, understanding relationships between variables, model interpretability, and estimating confidence intervals. | Emphasizes **prediction**, generalization accuracy on unseen test data, and automated decision-making. |\n| 2. | **Disciplinary Origin** | Originated as a subfield of Mathematics and Mathematical Statistics. | Originated as a subfield of Computer Science and Artificial Intelligence (AI). |\n| 3. | **Data Assumptions** | Often makes explicit probabilistic assumptions about data distributions (e.g., normality, homoscedasticity, independence). | Generally distribution-free; makes minimal assumptions about data generation and relies on algorithmic optimization. |\n| 4. | **Model Interpretability** | High priority on interpretable parameters (e.g., $p$-values, confidence intervals, coefficients with hypothesis tests). | Prioritizes predictive performance; often utilizes complex, non-linear black-box models (e.g., ensembles, deep networks). |\n| 5. | **Handling of High Dimensions** | Focuses on statistical significance, formal variable selection, and asymptotic theory ($n \\to \\infty$). | Designed to handle high-dimensional, large-scale datasets ($p \\gg n$) using regularization and computational heuristics. |\n| 6. | **Overlapping Algorithms** | Linear Regression, Logistic Regression, Generalized Additive Models (GAMs), Ridge/Lasso. | Linear Regression, Logistic Regression, Random Forest, AdaBoost, SVM, Neural Networks. |\n| 7. | **Evaluation Criteria** | Goodness-of-fit, AIC, BIC, hypothesis tests, $p$-values, parameter standard errors. | Cross-validation error, test-set loss, ROC-AUC, Precision, Recall, F1-Score. |\n| 8. | **Typical Applications** | Clinical trial drug efficacy analysis, econometric modeling, epidemiological factor discovery. | Autonomous driving, recommendation systems, real-time fraud detection, facial recognition. |\n\n### 3. Accuracy Note\n\n> **Accuracy Note:** The fields of Statistical Learning and Machine Learning overlap significantly and are not mutually exclusive. Methods such as Linear Regression and Logistic Regression are foundational to both. Do not claim that statistical learning never predicts or that machine learning never explains relationships; rather, the distinction lies in their relative emphasis on interpretability and formal inference versus pure predictive performance.",
-    "displayIndex": 11
+    "displayIndex": 11,
+    "category": "Unit 1",
+    "unit_num": 1,
+    "section_type": "long_answer",
+    "read_time": "~4 min",
+    "image_file": null
   },
   {
-    "id": 10,
+    "id": 12,
     "title": "⚡ Unit 1 Quick Revision / Complete Recap",
     "prompt": "High-yield executive recap of Unit 1 concepts, core algorithms, equations, and applications.",
     "category": "Unit 1",
@@ -136,7 +146,7 @@
     "displayIndex": 12
   },
   {
-    "id": 11,
+    "id": 13,
     "title": "✏️ Unit 1 Short Q&A (2-Marks Bank)",
     "prompt": "Collection of direct 2-mark questions and concise academic answers for Unit 1.",
     "category": "Unit 1",
@@ -148,7 +158,7 @@
     "displayIndex": 13
   },
   {
-    "id": 12,
+    "id": 14,
     "title": "Unit 2 • Q10. General-to-Specific Hypothesis Ordering with Suitable Example",
     "prompt": "Explain General-to-Specific Hypothesis Ordering with a suitable   example.",
     "category": "Unit 2",
@@ -160,7 +170,7 @@
     "displayIndex": 14
   },
   {
-    "id": 13,
+    "id": 15,
     "title": "Unit 2 • Q11. Find-S Algorithm with Steps and Suitable Example",
     "prompt": "Describe the Find-S algorithm with its steps and a suitable example.",
     "category": "Unit 2",
@@ -172,7 +182,7 @@
     "displayIndex": 15
   },
   {
-    "id": 14,
+    "id": 16,
     "title": "Unit 2 • Q12. Candidate Elimination Algorithm and Concept of Version Space",
     "prompt": "Explain the Candidate Elimination algorithm and the concept of   Version Space.",
     "category": "Unit 2",
@@ -184,7 +194,7 @@
     "displayIndex": 16
   },
   {
-    "id": 15,
+    "id": 17,
     "title": "Unit 2 • Q13. Basic Concepts of Bayesian Learning and Difference Between MLE and MAP Estimation",
     "prompt": "Explain the basic concepts of Bayesian Learning. Differentiate   between Maximum Likelihood Estimation (MLE) and Maximum A Posteriori (MAP)   estimation.",
     "category": "Unit 2",
@@ -196,7 +206,7 @@
     "displayIndex": 17
   },
   {
-    "id": 16,
+    "id": 18,
     "title": "Unit 2 • Q14. K-Nearest Neighbour (kNN) Classification Algorithm, Distance Metrics and Curse of Dimensionality",
     "prompt": "Explain the k-Nearest Neighbour (kNN) classification algorithm.   Discuss distance metrics and the curse of dimensionality.",
     "category": "Unit 2",
@@ -208,7 +218,7 @@
     "displayIndex": 18
   },
   {
-    "id": 17,
+    "id": 19,
     "title": "Unit 2 • Q15. Apply Find-S Algorithm to Find the Most Specific Hypothesis",
     "prompt": "Show me the answer",
     "category": "Unit 2",
@@ -220,7 +230,7 @@
     "displayIndex": 19
   },
   {
-    "id": 18,
+    "id": 20,
     "title": "Unit 2 • Q16. Apply Candidate Elimination Algorithm to Identify Specific (S) and General (G) Boundaries",
     "prompt": "Apply the Candidate Elimination algorithm to a given set of training examples and identify the Specific (S) and General (G) boundaries of the Version Space.\\\n&#x20;\\\n&#x20;\n\n\n**Example**\n\n\n**Weather**\n\n\n**Temperature**\n\n\n**Humidity**\n\n\n**Wind**\n\n\n**Play Cricket**\n\n\n1\n\n\nSunny\n\n\nWarm\n\n\nNormal\n\n\nWeak\n\n\nYes\n\n\n2\n\n\nSunny\n\n\nWarm\n\n\nHigh\n\n\nStrong\n\n\nYes\n\n\n3\n\n\nRainy\n\n\nCold\n\n\nHigh\n\n\nWeak\n\n\nNo\n\n\n4\n\n\nSunny\n\n\nWarm\n\n\nNormal\n\n\nStrong\n\n\nYes",
     "category": "Unit 2",
@@ -232,7 +242,7 @@
     "displayIndex": 20
   },
   {
-    "id": 19,
+    "id": 21,
     "title": "Unit 2 • Q17. Candidate Elimination Algorithm – Finding Specific (S) and General (G) Boundaries",
     "prompt": "Apply the Candidate Elimination algorithm to a given set of training examples and identify the Specific (S) and General (G) boundaries of the Version Space.\\\n&#x20;\\\n&#x20;\n\n\n**Example**\n\n\n**Weather**\n\n\n**Temperature**\n\n\n**Humidity**\n\n\n**Wind**\n\n\n**Play Cricket**\n\n\n1\n\n\nSunny\n\n\nWarm\n\n\nNormal\n\n\nWeak\n\n\nYes\n\n\n2\n\n\nSunny\n\n\nWarm\n\n\nHigh\n\n\nStrong\n\n\nYes\n\n\n3\n\n\nRainy\n\n\nCold\n\n\nHigh\n\n\nWeak\n\n\nNo\n\n\n4\n\n\nSunny\n\n\nWarm\n\n\nNormal\n\n\nStrong\n\n\nYes",
     "category": "Unit 2",
@@ -244,7 +254,7 @@
     "displayIndex": 21
   },
   {
-    "id": 20,
+    "id": 22,
     "title": "Unit 2 • Q18. Gaussian Naive Bayes Classifier for Disease Prediction",
     "prompt": "A dataset contains information about patients with fever, cough and   headache. Explain how the Gaussian Naive Bayes classifier can be applied to   predict whether a patient has a disease.\\\n&#x20;  \\\n&#x20;  \\\n&#x20; &#x20;\n\n\n**Fever (°C)**\n\n\n**38.5**\n\n\n**39.0**\n\n\n**36.5**\n\n\n**36.8**\n\n\n**38.2**\n\n\nCough (0/1)\n\n\n1\n\n\n1\n\n\n0\n\n\n0\n\n\n1\n\n\nHeadache (0/1)\n\n\n1\n\n\n1\n\n\n0\n\n\n0\n\n\n1\n\n\nResult\n\n\nDisease\n\n\nDisease\n\n\nNo Disease\n\n\nNo Disease\n\n\n?",
     "category": "Unit 2",
@@ -256,7 +266,7 @@
     "displayIndex": 22
   },
   {
-    "id": 21,
+    "id": 23,
     "title": "Unit 2 • Q19. Application of Naive Bayes Classifier in a Real-World Classification Problem",
     "prompt": "Choose any real-world classification problem and explain how the   Naive Bayes classifier can be applied to predict the class of a new instance.",
     "category": "Unit 2",
@@ -268,7 +278,7 @@
     "displayIndex": 23
   },
   {
-    "id": 22,
+    "id": 24,
     "title": "⚡ Unit 2 Quick Revision / Complete Recap",
     "prompt": "High-yield executive recap of Unit 2 concepts, core algorithms, equations, and applications.",
     "category": "Unit 2",
@@ -280,7 +290,7 @@
     "displayIndex": 24
   },
   {
-    "id": 23,
+    "id": 25,
     "title": "✏️ Unit 2 Short Q&A (2-Marks Bank)",
     "prompt": "Collection of direct 2-mark questions and concise academic answers for Unit 2.",
     "category": "Unit 2",
@@ -292,7 +302,7 @@
     "displayIndex": 25
   },
   {
-    "id": 24,
+    "id": 26,
     "title": "Unit 3 • Q20. Linear Regression with Mathematical Representation and Real-World Example",
     "prompt": "Explain Linear Regression with its mathematical representation and a   suitable real-world example.",
     "category": "Unit 3",
@@ -304,7 +314,7 @@
     "displayIndex": 26
   },
   {
-    "id": 25,
+    "id": 27,
     "title": "Unit 3 • Q21. Difference Between Linear Regression and Logistic Regression",
     "prompt": "Differentiate between Linear Regression and Logistic Regression with suitable examples.",
     "category": "Unit 3",
@@ -316,7 +326,7 @@
     "displayIndex": 27
   },
   {
-    "id": 26,
+    "id": 28,
     "title": "Unit 3 • Q22. Linear Classification and Non-linear Transformation in Machine Learning",
     "prompt": "Explain Linear Classification and Non-linear Transformation in   Machine Learning with suitable examples.",
     "category": "Unit 3",
@@ -328,7 +338,7 @@
     "displayIndex": 28
   },
   {
-    "id": 27,
+    "id": 29,
     "title": "Unit 3 • Q23. Decision Boundary and Support Vectors in Support Vector Machines (SVM)",
     "prompt": "Explain the concept of Decision Boundary and Support Vectors in   Support Vector Machines (SVM).",
     "category": "Unit 3",
@@ -340,7 +350,7 @@
     "displayIndex": 29
   },
   {
-    "id": 28,
+    "id": 30,
     "title": "Unit 3 • Q24. Soft Margin SVM, Kernel Functions and Radial Basis Functions (RBF)",
     "prompt": "Describe the Soft Margin SVM and explain the role of Kernel Functions   and Radial Basis Functions (RBF).",
     "category": "Unit 3",
@@ -352,7 +362,7 @@
     "displayIndex": 30
   },
   {
-    "id": 29,
+    "id": 31,
     "title": "Unit 3 • Q25. Application of Linear Regression to Predict Examination Marks",
     "prompt": "Consider a dataset containing the number of hours studied and the   corresponding examination marks of students. Explain how Linear Regression   can be applied to predict the marks of a new student.\\\n&#x20;  \\\n&#x20;  \\\n&#x20; &#x20;\n\n\n**Student**\n\n\n**S1**\n\n\n**S2**\n\n\n**S3**\n\n\n**S4**\n\n\n**S5**\n\n\n**Study Hours (X)**\n\n\n1\n\n\n2\n\n\n3\n\n\n4\n\n\n5\n\n\n**Marks (Y)**\n\n\n20\n\n\n30\n\n\n40\n\n\n50\n\n\n60",
     "category": "Unit 3",
@@ -364,7 +374,7 @@
     "displayIndex": 31
   },
   {
-    "id": 30,
+    "id": 32,
     "title": "Unit 3 • Q26. Application of Logistic Regression in a Real-World Binary Classification Problem",
     "prompt": "Explain how Logistic Regression can be used to solve a real-world   binary classification problem of your choice. Describe the working procedure   with an example.",
     "category": "Unit 3",
@@ -376,7 +386,7 @@
     "displayIndex": 32
   },
   {
-    "id": 31,
+    "id": 33,
     "title": "Unit 3 • Q27. Application of Support Vector Machine (SVM) for Heart Patient Classification",
     "prompt": "Consider a dataset containing heart patient records. Explain the steps involved in applying SVM to classify patients into disease and no-disease categories.\\\n&#x20;\\\n&#x20;\n\n\n**Patient**\n\n\n**Age (Years)**\n\n\n**Blood Pressure**\n\n\n**Cholesterol**\n\n\n**Class**\n\n\nP1\n\n\n25\n\n\n110\n\n\n170\n\n\nHealthy\n\n\nP2\n\n\n30\n\n\n115\n\n\n180\n\n\nHealthy\n\n\nP3\n\n\n45\n\n\n140\n\n\n230\n\n\nAt Risk\n\n\nP4\n\n\n50\n\n\n150\n\n\n250\n\n\nAt Risk\n\n\nP5\n\n\n35\n\n\n120\n\n\n190\n\n\nHealthy",
     "category": "Unit 3",
@@ -388,7 +398,7 @@
     "displayIndex": 33
   },
   {
-    "id": 32,
+    "id": 34,
     "title": "Unit 3 • Q28. Application of Support Vector Machine (SVM) in a Real-World Classification Problem",
     "prompt": "Explain how Support Vector Machine (SVM) can be applied to solve a real-world classification problem of your choice. Describe the role of support vectors and decision boundaries.",
     "category": "Unit 3",
@@ -400,7 +410,7 @@
     "displayIndex": 34
   },
   {
-    "id": 33,
+    "id": 35,
     "title": "⚡ Unit 3 Quick Revision / Complete Recap",
     "prompt": "High-yield executive recap of Unit 3 concepts, core algorithms, equations, and applications.",
     "category": "Unit 3",
@@ -412,7 +422,7 @@
     "displayIndex": 35
   },
   {
-    "id": 34,
+    "id": 36,
     "title": "✏️ Unit 3 Short Q&A (2-Marks Bank)",
     "prompt": "Collection of direct 2-mark questions and concise academic answers for Unit 3.",
     "category": "Unit 3",
@@ -424,7 +434,7 @@
     "displayIndex": 36
   },
   {
-    "id": 35,
+    "id": 37,
     "title": "Unit 4 • Q29. Accuracy, Precision, Recall and F1-Score",
     "prompt": "Define Accuracy, Precision, Recall and F1-score. Explain their   importance in evaluating a classification model.",
     "category": "Unit 4",
@@ -436,7 +446,7 @@
     "displayIndex": 37
   },
   {
-    "id": 36,
+    "id": 38,
     "title": "Unit 4 • Q30. Sampling and Bootstrapping Techniques in Machine Learning",
     "prompt": "Explain Sampling and Bootstrapping techniques in Machine Learning.",
     "category": "Unit 4",
@@ -448,7 +458,7 @@
     "displayIndex": 38
   },
   {
-    "id": 37,
+    "id": 39,
     "title": "Unit 4 • Q31. ROC Curve and Its Importance in Evaluating Classification Models",
     "prompt": "Explain the concept of ROC Curve and its importance in evaluating   classification models.",
     "category": "Unit 4",
@@ -460,7 +470,7 @@
     "displayIndex": 39
   },
   {
-    "id": 38,
+    "id": 40,
     "title": "Unit 4 • Q32. Partitional Clustering, Hierarchical Clustering and Types of Clusters",
     "prompt": "Differentiate between Partitional Clustering and Hierarchical   Clustering. Explain the different types of clusters.",
     "category": "Unit 4",
@@ -472,7 +482,7 @@
     "displayIndex": 40
   },
   {
-    "id": 39,
+    "id": 41,
     "title": "Unit 4 • Q33. DBSCAN Clustering Algorithm",
     "prompt": "Explain the DBSCAN clustering algorithm with its important parameters   and steps.",
     "category": "Unit 4",
@@ -484,7 +494,7 @@
     "displayIndex": 41
   },
   {
-    "id": 40,
+    "id": 42,
     "title": "Unit 4 • Q34. Calculation of Accuracy, Precision, Recall and F1-Score",
     "prompt": "Consider the following confusion matrix. Calculate Accuracy,   Precision, Recall and F1-score: TP = 40, FN = 10, FP = 5, TN = 45 and explain   each term in detail.",
     "category": "Unit 4",
@@ -496,7 +506,7 @@
     "displayIndex": 42
   },
   {
-    "id": 41,
+    "id": 43,
     "title": "Unit 4 • Q35. Cross-Validation in Machine Learning",
     "prompt": "Explain how Cross-validation can be applied to evaluate a Machine   Learning model using a suitable real-world example of your choice.",
     "category": "Unit 4",
@@ -508,7 +518,7 @@
     "displayIndex": 43
   },
   {
-    "id": 42,
+    "id": 44,
     "title": "Unit 4 • Q36. K-Means Clustering for Grouping Similar Objects",
     "prompt": "Choose any real-world application and explain how K-Means clustering   can be used to group similar objects. Describe the steps involved in the   clustering process.",
     "category": "Unit 4",
@@ -520,7 +530,7 @@
     "displayIndex": 44
   },
   {
-    "id": 43,
+    "id": 45,
     "title": "Unit 4 • Q37. Hierarchical Clustering for Real-World Grouping",
     "prompt": "Explain how Hierarchical Clustering can be applied to solve a   real-world grouping problem of your choice. Describe the role of a dendrogram   in identifying clusters.",
     "category": "Unit 4",
@@ -532,7 +542,7 @@
     "displayIndex": 45
   },
   {
-    "id": 44,
+    "id": 46,
     "title": "Unit 4 • Q38. Applying DBSCAN to Geographical Customer Locations",
     "prompt": "Consider a dataset containing geographical locations of customers. Explain how DBSCAN can be applied to identify dense groups of customers and detect noise points with Epsilon (ε) = 1.5.\n\n\n**Customers**\n\n\n**C1**\n\n\n**C2**\n\n\n**C3**\n\n\n**C4**\n\n\n**C5**\n\n\n**C6**\n\n\n**C7**\n\n\n**C8**\n\n\n**X Coordinate**\n\n\n1\n\n\n2\n\n\n1\n\n\n2\n\n\n8\n\n\n9\n\n\n8\n\n\n20\n\n\n**Y Coordinate**\n\n\n1\n\n\n1\n\n\n2\n\n\n2\n\n\n8\n\n\n8\n\n\n9\n\n\n20",
     "category": "Unit 4",
@@ -544,7 +554,7 @@
     "displayIndex": 46
   },
   {
-    "id": 45,
+    "id": 47,
     "title": "⚡ Unit 4 Quick Revision / Complete Recap",
     "prompt": "High-yield executive recap of Unit 4 concepts, core algorithms, equations, and applications.",
     "category": "Unit 4",
@@ -556,7 +566,7 @@
     "displayIndex": 47
   },
   {
-    "id": 46,
+    "id": 48,
     "title": "✏️ Unit 4 Short Q&A (2-Marks Bank)",
     "prompt": "Collection of direct 2-mark questions and concise academic answers for Unit 4.",
     "category": "Unit 4",
@@ -568,7 +578,7 @@
     "displayIndex": 48
   },
   {
-    "id": 47,
+    "id": 49,
     "title": "Unit 5 • Q39. Ensemble Learning, Bagging and Boosting",
     "prompt": "Define Ensemble Learning. Explain the concepts of Bagging and   Boosting with suitable examples.",
     "category": "Unit 5",
@@ -580,7 +590,7 @@
     "displayIndex": 49
   },
   {
-    "id": 48,
+    "id": 50,
     "title": "Unit 5 • Q40. Random Forest Algorithm and Its Advantages in Classification",
     "prompt": "Explain the working procedure of the Random Forest algorithm. Discuss   its advantages in classification problems.",
     "category": "Unit 5",
@@ -592,7 +602,7 @@
     "displayIndex": 50
   },
   {
-    "id": 49,
+    "id": 51,
     "title": "Unit 5 • Q41. AdaBoost Algorithm: Working Principle and Basic Steps",
     "prompt": "Explain the AdaBoost algorithm with its basic steps and working   principle.",
     "category": "Unit 5",
@@ -604,7 +614,7 @@
     "displayIndex": 51
   },
   {
-    "id": 50,
+    "id": 52,
     "title": "Unit 5 • Q42. Training Error, Testing Error and Generalization in Machine Learning",
     "prompt": "Differentiate between Training Error and Testing Error. Explain the   concept of Generalization in Machine Learning.",
     "category": "Unit 5",
@@ -616,7 +626,7 @@
     "displayIndex": 52
   },
   {
-    "id": 51,
+    "id": 53,
     "title": "Unit 5 • Q43. PAC Learnability and VC Dimension in Computational Learning Theory",
     "prompt": "Explain PAC Learnability and VC Dimension in Computational Learning   Theory.",
     "category": "Unit 5",
@@ -628,7 +638,7 @@
     "displayIndex": 53
   },
   {
-    "id": 52,
+    "id": 54,
     "title": "Unit 5 • Q44. Application of Random Forest in a Real-World Classification Problem",
     "prompt": "choose any real-world classification problem and explain how the   Random Forest algorithm can be applied to improve prediction performance.   Describe its working steps.",
     "category": "Unit 5",
@@ -640,7 +650,7 @@
     "displayIndex": 54
   },
   {
-    "id": 53,
+    "id": 55,
     "title": "Unit 5 • Q45. Bagging and Boosting to Improve Machine Learning Performance",
     "prompt": "Explain how Bagging and Boosting can be applied to improve the   performance of a Machine Learning model using a suitable real-world example   of your choice.",
     "category": "Unit 5",
@@ -652,7 +662,7 @@
     "displayIndex": 55
   },
   {
-    "id": 54,
+    "id": 56,
     "title": "Unit 5 • Q46. AdaBoost: Combining Weak Learners to Produce a Strong Classifier",
     "prompt": "Explain how the AdaBoost algorithm combines multiple weak learners to   produce a strong classifier.",
     "category": "Unit 5",
@@ -664,7 +674,7 @@
     "displayIndex": 56
   },
   {
-    "id": 55,
+    "id": 57,
     "title": "Unit 5 • Q47. Overfitting and the Role of Regularization and Validation Techniques",
     "prompt": "Explain how overfitting can occur and how Regularization and   Validation techniques can help overcome it.",
     "category": "Unit 5",
@@ -676,7 +686,7 @@
     "displayIndex": 57
   },
   {
-    "id": 56,
+    "id": 58,
     "title": "Unit 5 • Q48. PAC Learnability, VC Dimension and Generalization Ability",
     "prompt": "Explain how the concepts of PAC Learnability and VC Dimension help in   understanding the generalization ability of a Machine Learning model.   Illustrate your answer with a suitable example.",
     "category": "Unit 5",
@@ -688,7 +698,7 @@
     "displayIndex": 58
   },
   {
-    "id": 57,
+    "id": 59,
     "title": "⚡ Unit 5 Quick Revision / Complete Recap",
     "prompt": "High-yield executive recap of Unit 5 concepts, core algorithms, equations, and applications.",
     "category": "Unit 5",
@@ -700,7 +710,7 @@
     "displayIndex": 59
   },
   {
-    "id": 58,
+    "id": 60,
     "title": "✏️ Unit 5 Short Q&A (2-Marks Bank)",
     "prompt": "Collection of direct 2-mark questions and concise academic answers for Unit 5.",
     "category": "Unit 5",
@@ -712,7 +722,7 @@
     "displayIndex": 60
   },
   {
-    "id": 59,
+    "id": 61,
     "title": "📊 Machine Learning Master Algorithm Comparison Matrix",
     "prompt": "Comprehensive cross-unit comparison matrix comparing all 15 key algorithms, mathematical representations, loss functions, and exam metrics.",
     "category": "Master Matrix",
@@ -724,11 +734,16 @@
     "displayIndex": 61
   },
   {
-    "id": "guide-master",
+    "id": 62,
     "unit": "Quick Revision",
     "title": "🎯 Master Numerical Preparation Guide & Exam Checklist (Units I–V)",
-    "prompt": "Complete consolidated numerical preparation guide and required answer changes across Units I to V.",
+    "prompt": "Master Numerical Preparation Guide & Exam Checklist covering Distance-Weighted kNN, MLE vs MAP, Logistic Regression, and high-frequency exam problems.",
     "markdown": "## Master Numerical Preparation Guide & Exam Checklist (Units I–V)\n\nPurpose: This guide consolidates all handwritten exam instructions, numerical preparation requirements, and specific answer additions across all 5 units for university examination readiness.\n\n---\n\n### Unit-by-Unit Numerical & Content Checklist\n\n#### Unit I -- Introduction\n- **Q10. Supervised vs Unsupervised Learning:** Clear comparison table with 8--10 structured rows (labelled vs unlabelled data, objective, output, classification/regression vs clustering, evaluation metrics, algorithms, and real-world examples).\n- **Q11. Statistical Learning vs Machine Learning:** Contrast inference and interpretability against prediction and generalization. Include the mandatory accuracy note: fields overlap significantly and methods like Linear Regression and Logistic Regression belong to both.\n\n#### Unit II -- Supervised Learning: Basic Methods\n- **Bayesian Learning (MLE vs MAP):** Show $\\theta_{\\text{MLE}} = \\arg\\max_\\theta P(D \\mid \\theta)$ and $\\theta_{\\text{MAP}} = \\arg\\max_\\theta P(D \\mid \\theta)P(\\theta)$. Coin toss example: 7 heads in 10 tosses gives $\\theta_{\\text{MLE}} = 0.70$; with fair-coin Beta prior (3 heads, 3 tails) gives $\\theta_{\\text{MAP}} = 10/16 = 0.625$.\n- **Distance-Weighted kNN:** Weight $w_i = 1/d_i$. Neighbours at distances 1, 2, 4 with classes Pass, Fail, Fail yield weights 1, 0.5, 0.25 $\\implies$ Pass total = 1.0, Fail total = 0.75 $\\implies$ predict Pass.\n- **Find-S Algorithm:** Start with most specific hypothesis $\\langle \\emptyset, \\emptyset, \\dots \\rangle$; update only on positive examples; ignore negative examples.\n\n#### Unit III -- Linear Models, Regression and SVM\n- **Logistic Regression Numerical:** Linear score $z = b + wx$. For $x=2, w=2, b=-3 \\implies z = 1$. Sigmoid probability $P = 1/(1+e^{-1}) \\approx 0.7311 = 73.11\\%$. With threshold 0.5, classify as Class 1.\n- **Support Vector Machines:** Maximum margin hyperplane $w^T x + b = 0$, margin $\\frac{2}{\\|w\\|}$, slack variables $\\xi_i \\ge 0$, and soft-margin minimization $\\min \\frac{1}{2}\\|w\\|^2 + C\\sum \\xi_i$.\n\n#### Unit IV -- Classifier Evaluation and Unsupervised Learning\n- **ROC Coordinates:** Calculate $TPR = \\frac{TP}{TP+FN}$ and $FPR = \\frac{FP}{FP+TN}$ at multiple threshold cutoffs. Plot $(FPR, TPR)$ with $(0,0)$ and $(1,1)$ endpoints.\n- **Confusion Matrix Numerical:** For $TP=40, FN=10, FP=5, TN=45$:\n  - $\\text{Accuracy} = \\frac{40+45}{100} = 85\\%$\n  - $\\text{Precision} = \\frac{40}{45} \\approx 88.89\\%$\n  - $\\text{Recall} = \\frac{40}{50} = 80\\%$\n  - $\\text{F1-Score} = \\frac{2 \\times 88.89 \\times 80}{88.89 + 80} \\approx 84.21\\%$\n- **DBSCAN Coordinate Clustering:** Customer coordinates C1--C8 with $\\varepsilon=1.5, \\text{MinPts}=3$:\n  - Cluster 1 = {C1, C2, C3, C4} (all core points)\n  - Cluster 2 = {C5, C6, C7} (all core points)\n  - Noise = {C8} (isolated point)\n  - Total Clusters = 2.\n\n#### Unit V -- Ensemble Learning and Computational Learning Theory\n- **PAC Learnability:** Condition $P(\\text{error}(h) \\le \\varepsilon) \\ge 1 - \\delta$. Maximum tolerated error $\\varepsilon$, failure probability $\\delta$, confidence $1-\\delta$.\n- **VC Dimension:** Maximum points shattered by hypothesis class. For 2D linear classifiers, VC Dimension = 3.\n- **Training vs Testing Error:** 10 incorrect out of 100 training $\\implies 10\\%$ training error; 20 incorrect out of 100 testing $\\implies 20\\%$ testing error. Large gap indicates overfitting.\n- **Random Forest Majority Voting:** 5 trees predict {Approved, Rejected, Approved, Approved, Rejected} $\\implies$ Approved = 3, Rejected = 2 $\\implies$ Final Class = Approved.\n\n---\n\n### Final Exam Preparation Checklist\n\n- [x] In every numerical answer, show formula, parameter substitution, step-by-step arithmetic, and final percentage or label.\n- [x] Clearly distinguish between illustrative practice numbers and numbers supplied on the exam paper.\n- [x] For classification metrics, remember: Precision divides by $TP+FP$; Recall divides by $TP+FN$.\n- [x] In distance-weighted kNN, closer points have higher weights ($w_i = 1/d_i$); zero distance needs special assignment to prevent division by zero.",
-    "displayIndex": 62
+    "displayIndex": 62,
+    "category": "Exam Guide",
+    "unit_num": 0,
+    "section_type": "index",
+    "read_time": "~6 min",
+    "image_file": null
   }
 ]

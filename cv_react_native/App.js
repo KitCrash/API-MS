@@ -212,15 +212,15 @@ export default function App() {
 
   // Filter options
   const filterTabs = [
-    { id: 'all', label: 'All Topics (59)' },
-    { id: 'u1', label: 'Unit 1 (11)', unit: 1 },
-    { id: 'u2', label: 'Unit 2 (12)', unit: 2 },
-    { id: 'u3', label: 'Unit 3 (11)', unit: 3 },
-    { id: 'u4', label: 'Unit 4 (12)', unit: 4 },
-    { id: 'u5', label: 'Unit 5 (12)', unit: 5 },
-    { id: 'recap', label: '⚡ Recaps (5)' },
-    { id: 'short', label: '✏️ 2-Marks (5)' },
-    { id: 'matrix', label: '📊 Master Matrix' },
+    { id: 'all', label: `All Topics (${articlesData.length})` },
+    { id: 'u1', label: `Unit 1 (${articlesData.filter((a) => a.unit_num === 1).length})`, unit: 1 },
+    { id: 'u2', label: `Unit 2 (${articlesData.filter((a) => a.unit_num === 2).length})`, unit: 2 },
+    { id: 'u3', label: `Unit 3 (${articlesData.filter((a) => a.unit_num === 3).length})`, unit: 3 },
+    { id: 'u4', label: `Unit 4 (${articlesData.filter((a) => a.unit_num === 4).length})`, unit: 4 },
+    { id: 'u5', label: `Unit 5 (${articlesData.filter((a) => a.unit_num === 5).length})`, unit: 5 },
+    { id: 'recap', label: `⚡ Recaps (${articlesData.filter((a) => a.section_type === 'recap').length})` },
+    { id: 'short', label: `✏️ 2-Marks (${articlesData.filter((a) => a.section_type === 'short_qa').length})` },
+    { id: 'matrix', label: '📊 Master Matrix & Guide' },
     { id: 'bookmarks', label: `⭐ Saved (${bookmarks.size})` },
     { id: 'read', label: `✅ Read (${readArticles.size})` },
   ];
