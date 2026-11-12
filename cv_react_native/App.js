@@ -17,6 +17,7 @@ import {
 } from 'react-native';
 
 import articlesData from './assets/cv_articles.json';
+import formulaImages from './assets/formulaImages.json';
 import { imageMap, getImageSource } from './assets/imageMap';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -1146,7 +1147,7 @@ function FormattedContent({ content, theme, fontScale }) {
     }
 
     if (!trimmed) {
-      elements.push(<View key={`sp-${i}`} style={{ height: 8 }} />);
+      elements.push(<View key={`sp-${i}`} style={{ height: 16 }} />);
       continue;
     }
 
@@ -1242,6 +1243,8 @@ function FormattedContent({ content, theme, fontScale }) {
       if (tableLines.length > 0) {
         const headerCells = tableLines[0];
         const bodyRows = tableLines.slice(1);
+        const isTwoCol = headerCells.length === 2;
+        const colMinWidth = isTwoCol ? Math.max(160, Math.floor((SCREEN_WIDTH - 64) / 2)) : 130;
 
         elements.push(
           <ScrollView
@@ -1251,10 +1254,20 @@ function FormattedContent({ content, theme, fontScale }) {
             style={styles.tableScrollWrapper}
           >
             <View style={[styles.tableContainer, { borderColor: theme.border, backgroundColor: theme.card }]}>
-              <View style={[styles.tableHeaderRow, { backgroundColor: theme.codeBg, borderBottomColor: theme.border }]}>
+              <View style={[styles.tableHeaderRow, { backgroundColor: theme.primaryBg, borderBottomColor: theme.primary, borderBottomWidth: 2 }]}>
                 {headerCells.map((h, hIdx) => (
-                  <View key={`th-${hIdx}`} style={[styles.tableCell, { minWidth: 110 }]}>
-                    <Text style={[styles.tableHeaderText, { color: theme.text, fontSize: 13 * fontScale }]}>
+                  <View
+                    key={`th-${hIdx}`}
+                    style={[
+                      styles.tableCell,
+                      {
+                        minWidth: colMinWidth,
+                        borderRightWidth: hIdx < headerCells.length - 1 ? 1.2 : 0,
+                        borderRightColor: theme.border,
+                      },
+                    ]}
+                  >
+                    <Text style={[styles.tableHeaderText, { color: theme.text, fontSize: 13.5 * fontScale }]}>
                       {h}
                     </Text>
                   </View>
@@ -1267,14 +1280,25 @@ function FormattedContent({ content, theme, fontScale }) {
                     styles.tableBodyRow,
                     {
                       borderBottomColor: theme.border,
-                      backgroundColor: rIdx % 2 === 0 ? theme.card : theme.bg,
+                      borderBottomWidth: rIdx < bodyRows.length - 1 ? 1 : 0,
+                      backgroundColor: rIdx % 2 === 0 ? theme.card : theme.codeBg,
                     },
                   ]}
                 >
                   {row.map((cell, cIdx) => (
-                    <View key={`td-${cIdx}`} style={[styles.tableCell, { minWidth: 110 }]}>
-                      <Text style={[styles.tableCellText, { color: theme.text, fontSize: 13 * fontScale }]}>
-                        {renderInlineText(cell, { color: theme.text, fontSize: 13 * fontScale }, theme)}
+                    <View
+                      key={`td-${cIdx}`}
+                      style={[
+                        styles.tableCell,
+                        {
+                          minWidth: colMinWidth,
+                          borderRightWidth: cIdx < row.length - 1 ? 1.2 : 0,
+                          borderRightColor: theme.border,
+                        },
+                      ]}
+                    >
+                      <Text style={[styles.tableCellText, { color: theme.text, fontSize: 13.5 * fontScale }]}>
+                        {renderInlineText(cell, { color: theme.text, fontSize: 13.5 * fontScale }, theme)}
                       </Text>
                     </View>
                   ))}
@@ -1292,9 +1316,13 @@ function FormattedContent({ content, theme, fontScale }) {
       const cleanContent = content
         .replace(/^\s*\$+\s*/g, '')
         .replace(/\s*\$+\s*$/g, '')
+        .replace(/^\\\[\s*/g, '')
+        .replace(/\s*\\\]$/g, '')
         .trim();
 
       if (!cleanContent) return null;
+
+      const imgData = (formulaImages && (formulaImages[cleanContent] || formulaImages[content.trim()] || formulaImages[cleanContent.replace(/\\\[|\\\]/g, '').trim()])) || null;
 
       return (
         <View
@@ -1302,19 +1330,36 @@ function FormattedContent({ content, theme, fontScale }) {
           style={[
             styles.formulaBox,
             {
-              backgroundColor: theme.codeBg,
-              borderColor: theme.border,
-              borderLeftColor: theme.primary,
+              backgroundColor: '#0B0F19',
+              borderColor: '#1E293B',
+              borderLeftColor: '#0284C7',
             },
           ]}
         >
           <View style={styles.formulaHeaderRow}>
-            <View style={[styles.formulaBadge, { backgroundColor: theme.primaryBg }]}>
+            <View style={[styles.formulaBadge, { backgroundColor: 'rgba(2, 132, 199, 0.2)' }]}>
               <Text style={{ fontSize: 11 }}>📐</Text>
-              <Text style={[styles.formulaLabel, { color: theme.primary }]}>Mathematical Formula</Text>
+              <Text style={[styles.formulaLabel, { color: '#38BDF8' }]}>Mathematical Formula</Text>
             </View>
           </View>
-          {renderFormulaContent(cleanContent, theme, fontScale)}
+          {imgData ? (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ alignItems: 'center', paddingVertical: 4 }}
+            >
+              <Image
+                source={{ uri: imgData.uri }}
+                style={{
+                  width: Math.min(Math.max(imgData.width, 80), 1200) * fontScale * 0.5,
+                  height: Math.min(Math.max(imgData.height, 35), 600) * fontScale * 0.5,
+                }}
+                resizeMode="contain"
+              />
+            </ScrollView>
+          ) : (
+            renderFormulaContent(cleanContent, theme, fontScale)
+          )}
         </View>
       );
     };
@@ -1707,27 +1752,27 @@ const styles = StyleSheet.create({
   },
   h1: {
     fontWeight: 'bold',
-    marginTop: 18,
-    marginBottom: 8,
+    marginTop: 26,
+    marginBottom: 12,
   },
   h2: {
     fontWeight: 'bold',
-    marginTop: 14,
-    marginBottom: 6,
+    marginTop: 22,
+    marginBottom: 10,
   },
   h3: {
     fontWeight: 'bold',
-    marginTop: 10,
-    marginBottom: 4,
+    marginTop: 18,
+    marginBottom: 8,
   },
   paragraph: {
-    lineHeight: 22,
-    marginBottom: 8,
+    lineHeight: 24,
+    marginBottom: 14,
   },
   bulletRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    marginBottom: 6,
+    marginBottom: 10,
   },
   bulletDot: {
     fontSize: 16,
@@ -1742,8 +1787,8 @@ const styles = StyleSheet.create({
     borderWidth: 1.2,
     borderLeftWidth: 4.5,
     borderRadius: 10,
-    padding: 12,
-    marginVertical: 12,
+    padding: 14,
+    marginVertical: 18,
   },
   formulaHeaderRow: {
     flexDirection: 'row',
@@ -1896,7 +1941,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   tableScrollWrapper: {
-    marginVertical: 12,
+    marginVertical: 18,
   },
   tableContainer: {
     borderWidth: 1,
@@ -1915,7 +1960,8 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
   tableCell: {
-    padding: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
     justifyContent: 'center',
   },
   tableCellText: {
