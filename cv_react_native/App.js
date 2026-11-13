@@ -163,7 +163,7 @@ export default function App() {
         results.push({
           article: art,
           score,
-          snippet: matchedSnippet || art.prompt || art.title,
+          snippet: matchedSnippet || art.title,
         });
       }
     }
@@ -328,12 +328,7 @@ export default function App() {
         {/* Title */}
         <Text style={[styles.cardTitle, { color: theme.text }]}>{item.title}</Text>
 
-        {/* Prompt Quote */}
-        {item.prompt ? (
-          <Text style={[styles.cardPrompt, { color: theme.textMuted }]} numberOfLines={2}>
-            {item.prompt}
-          </Text>
-        ) : null}
+{/* Prompt Quote removed per user request */}
 
         {/* Search match badge if matched in answer */}
         {searchQuery.trim() && item.markdown && item.markdown.toLowerCase().includes(searchQuery.toLowerCase().trim()) && !item.title.toLowerCase().includes(searchQuery.toLowerCase().trim()) ? (
@@ -445,14 +440,7 @@ export default function App() {
               {activeArticle.title}
             </Text>
 
-            {/* Prompt Callout */}
-            {activeArticle.prompt ? (
-              <View style={[styles.promptCallout, { backgroundColor: theme.primaryBg, borderLeftColor: theme.primary }]}>
-                <Text style={[styles.promptText, { color: theme.accent, fontSize: 13.5 * fontScale }]}>
-                  {activeArticle.prompt}
-                </Text>
-              </View>
-            ) : null}
+{/* Prompt Callout removed per user request */}
 
             {/* High-Resolution Diagram with Tap to Zoom */}
             {activeArticle.image_file && getImageSource(activeArticle.image_file) ? (
@@ -518,27 +506,6 @@ export default function App() {
                   </Text>
                 </TouchableOpacity>
               ) : null}
-            </View>
-
-            {/* Bottom Actions */}
-            <View style={styles.bottomActionBar}>
-              <TouchableOpacity
-                onPress={() => toggleBookmark(activeArticle.id)}
-                style={[styles.bottomBtn, { backgroundColor: theme.card, borderColor: theme.border }]}
-              >
-                <Text style={[styles.bottomBtnText, { color: theme.text }]}>
-                  {bookmarks.has(activeArticle.id) ? '⭐ Bookmarked' : '☆ Bookmark'}
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                onPress={() => toggleRead(activeArticle.id)}
-                style={[styles.bottomBtn, { backgroundColor: theme.primaryBg, borderColor: theme.primary }]}
-              >
-                <Text style={[styles.bottomBtnText, { color: theme.primary, fontWeight: 'bold' }]}>
-                  {readArticles.has(activeArticle.id) ? '✅ Completed' : '⚪ Mark as Done'}
-                </Text>
-              </TouchableOpacity>
             </View>
           </ScrollView>
         </View>
@@ -682,11 +649,17 @@ export default function App() {
         visible={chatModalVisible}
         animationType="slide"
         onRequestClose={() => setChatModalVisible(false)}
+        statusBarTranslucent
       >
+        <StatusBar
+          barStyle={theme.statusBar}
+          backgroundColor={theme.card}
+          translucent={Platform.OS === 'android'}
+        />
         <SafeAreaView style={[styles.chatModalContainer, { backgroundColor: theme.bg }]}>
           {/* Modal Header */}
           <View style={[styles.chatModalHeader, { backgroundColor: theme.card, borderBottomColor: theme.border }]}>
-            <View style={{ flex: 1 }}>
+            <View style={{ flex: 1, paddingRight: 8 }}>
               <Text style={[styles.chatModalTitle, { color: theme.text }]}>💬 Smart Keyword & Question Finder</Text>
               <Text style={[styles.chatModalSub, { color: theme.textMuted }]}>
                 Search any concept, formula, or keyword across all 48 Q&As
@@ -695,6 +668,7 @@ export default function App() {
             <TouchableOpacity
               onPress={() => setChatModalVisible(false)}
               style={[styles.chatCloseBtn, { backgroundColor: theme.codeBg }]}
+              hitSlop={10}
             >
               <Text style={[styles.chatCloseText, { color: theme.text }]}>✕</Text>
             </TouchableOpacity>
@@ -818,61 +792,187 @@ export default function App() {
   );
 }
 
+const SUBSCRIPTS = {
+  '0': '₀', '1': '₁', '2': '₂', '3': '₃', '4': '₄',
+  '5': '₅', '6': '₆', '7': '₇', '8': '₈', '9': '₉',
+  'i': 'ᵢ', 'j': 'ⱼ', 'k': 'ₖ', 'l': 'ₗ', 'm': 'ₘ',
+  'n': 'ₙ', 'p': 'ₚ', 'r': 'ᵣ', 's': 'ₛ', 't': 'ₜ',
+  'x': 'ₓ', 'y': 'ᵧ', 'a': 'ₐ', 'e': 'ₑ', 'h': 'ₕ',
+  'o': 'ₒ', 'u': 'ᵤ', 'v': 'ᵥ'
+};
+
+const SUPERSCRIPTS = {
+  '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴',
+  '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹',
+  '+': '⁺', '-': '⁻', '=': '⁼', '(': '⁽', ')': '⁾',
+  'n': 'ⁿ', 'i': 'ⁱ', 'T': 'ᵀ'
+};
+
 function cleanLatexSymbols(text) {
   if (!text) return '';
-  return text
-    .replace(/\\boxed\{([^{}]+)\}/g, '$1')
-    .replace(/\\operatorname\{([^}]+)\}/g, '$1')
-    .replace(/\\text\{([^}]+)\}/g, '$1')
-    .replace(/\\mathbf\{([^}]+)\}/g, '$1')
-    .replace(/\\mathbb\{R\}/g, 'ℝ')
-    .replace(/\\tilde\{([^}]+)\}/g, '$1̃')
-    .replace(/\\hat\{([^}]+)\}/g, '$1̂')
-    .replace(/\\bar\{([^}]+)\}/g, '$1̄')
-    .replace(/\\vec\{([^}]+)\}/g, '$1⃗')
-    .replace(/\\quad/g, '   ')
-    .replace(/\\times/g, '×')
-    .replace(/\\cdot/g, '·')
-    .replace(/\\in/g, '∈')
-    .replace(/\\pi/g, 'π')
-    .replace(/\\theta/g, 'θ')
-    .replace(/\\rho/g, 'ρ')
-    .replace(/\\alpha/g, 'α')
-    .replace(/\\beta/g, 'β')
-    .replace(/\\gamma/g, 'γ')
-    .replace(/\\delta/g, 'δ')
-    .replace(/\\epsilon/g, 'ε')
-    .replace(/\\varepsilon/g, 'ε')
-    .replace(/\\sigma/g, 'σ')
-    .replace(/\\lambda/g, 'λ')
-    .replace(/\\mu/g, 'μ')
-    .replace(/\\xi/g, 'ξ')
-    .replace(/\\phi/g, 'φ')
-    .replace(/\\Phi/g, 'Φ')
-    .replace(/\\emptyset/g, '∅')
-    .replace(/\\leq/g, '≤')
-    .replace(/\\le\b/g, '≤')
-    .replace(/\\geq/g, '≥')
-    .replace(/\\ge\b/g, '≥')
-    .replace(/\\neq/g, '≠')
-    .replace(/\\approx/g, '≈')
-    .replace(/\\propto/g, '∝')
-    .replace(/\\infty/g, '∞')
-    .replace(/\\cdots/g, '...')
-    .replace(/\\dots/g, '...')
-    .replace(/\\langle/g, '⟨')
-    .replace(/\\rangle/g, '⟩')
-    .replace(/\\left\(/g, '(')
-    .replace(/\\right\)/g, ')')
-    .replace(/\\left\[/g, '[')
-    .replace(/\\right\]/g, ']')
-    .replace(/\\left\\\{/g, '{')
-    .replace(/\\right\\\}/g, '}')
-    .replace(/\\ln/g, 'ln')
-    .replace(/\\exp/g, 'exp')
-    .replace(/\\sum/g, '∑')
-    .replace(/\\prod/g, '∏')
-    .replace(/\\sqrt/g, '√');
+  let s = text;
+
+  // HTML entities & stray backslashes
+  s = s.replace(/&#x20;/g, ' ')
+       .replace(/&nbsp;/g, ' ')
+       .replace(/&lt;/g, '<')
+       .replace(/&gt;/g, '>')
+       .replace(/&amp;/g, '&')
+       .replace(/\\\s*$/gm, '')
+       .replace(/\\\s*\n/g, '\n');
+
+  // Strip LaTeX formatting wrappers
+  s = s.replace(/\\boxed\{([^\{\}]+)\}/g, '$1')
+       .replace(/\\operatorname\{([^}]+)\}/g, '$1')
+       .replace(/\\text\{([^}]+)\}/g, '$1')
+       .replace(/\\mathbf\{([^}]+)\}/g, '$1')
+       .replace(/\\mathrm\{([^}]+)\}/g, '$1')
+       .replace(/\\mathit\{([^}]+)\}/g, '$1')
+       .replace(/\\mathbb\{R\}/g, 'ℝ')
+       .replace(/\\mathbb\{E\}/g, '𝔼');
+
+  // Accents, overbars, hats, vectors (both braced and unbraced)
+  s = s.replace(/\\bar\{([^\{\}]+)\}/g, '$1̄')
+       .replace(/\\bar\s*([a-zA-Z])/g, '$1̄')
+       .replace(/\\hat\{([^\{\}]+)\}/g, '$1̂')
+       .replace(/\\hat\s*([a-zA-Z])/g, '$1̂')
+       .replace(/\\tilde\{([^\{\}]+)\}/g, '$1̃')
+       .replace(/\\tilde\s*([a-zA-Z])/g, '$1̃')
+       .replace(/\\vec\{([^\{\}]+)\}/g, '$1⃗')
+       .replace(/\\vec\s*([a-zA-Z])/g, '$1⃗');
+
+  // Ellipses & dots
+  s = s.replace(/\\ldots/g, '…')
+       .replace(/\\cdots/g, '…')
+       .replace(/\\dots/g, '…');
+
+  // Greek letters
+  s = s.replace(/\\theta/g, 'θ')
+       .replace(/\\alpha/g, 'α')
+       .replace(/\\beta/g, 'β')
+       .replace(/\\gamma/g, 'γ')
+       .replace(/\\delta/g, 'δ')
+       .replace(/\\epsilon/g, 'ε')
+       .replace(/\\varepsilon/g, 'ε')
+       .replace(/\\zeta/g, 'ζ')
+       .replace(/\\eta/g, 'η')
+       .replace(/\\iota/g, 'ι')
+       .replace(/\\kappa/g, 'κ')
+       .replace(/\\lambda/g, 'λ')
+       .replace(/\\mu/g, 'μ')
+       .replace(/\\nu/g, 'ν')
+       .replace(/\\xi/g, 'ξ')
+       .replace(/\\pi/g, 'π')
+       .replace(/\\rho/g, 'ρ')
+       .replace(/\\sigma/g, 'σ')
+       .replace(/\\tau/g, 'τ')
+       .replace(/\\phi/g, 'φ')
+       .replace(/\\Phi/g, 'Φ')
+       .replace(/\\chi/g, 'χ')
+       .replace(/\\psi/g, 'ψ')
+       .replace(/\\omega/g, 'ω')
+       .replace(/\\Omega/g, 'Ω')
+       .replace(/\\Delta/g, 'Δ')
+       .replace(/\\Sigma/g, 'Σ');
+
+  // Operators & Relations
+  s = s.replace(/\\approx/g, '≈')
+       .replace(/\\propto/g, '∝')
+       .replace(/\\infty/g, '∞')
+       .replace(/\\neq/g, '≠')
+       .replace(/\\leq/g, '≤')
+       .replace(/\\le\b/g, '≤')
+       .replace(/\\geq/g, '≥')
+       .replace(/\\ge\b/g, '≥')
+       .replace(/\\gg/g, '≫')
+       .replace(/\\ll/g, '≪')
+       .replace(/\\times/g, '×')
+       .replace(/\\cdot/g, '·')
+       .replace(/\\in/g, '∈')
+       .replace(/\\notin/g, '∉')
+       .replace(/\\pm/g, '±')
+       .replace(/\\mp/g, '∓')
+       .replace(/\\to/g, '→')
+       .replace(/\\rightarrow/g, '→')
+       .replace(/\\implies/g, '⇒')
+       .replace(/\\Rightarrow/g, '⇒')
+       .replace(/\\subset/g, '⊂')
+       .replace(/\\cup/g, '∪')
+       .replace(/\\cap/g, '∩')
+       .replace(/\\forall/g, '∀')
+       .replace(/\\exists/g, '∃')
+       .replace(/\\sim/g, '~')
+       .replace(/\\equiv/g, '≡')
+       .replace(/\\mid/g, '|')
+       .replace(/\\\|/g, '‖')
+       .replace(/\\sum/g, '∑')
+       .replace(/\\prod/g, '∏')
+       .replace(/\\sqrt/g, '√')
+       .replace(/\\ln/g, 'ln')
+       .replace(/\\exp/g, 'exp')
+       .replace(/\\log/g, 'log')
+       .replace(/\\quad/g, '   ')
+       .replace(/\\qquad/g, '      ')
+       .replace(/\\arg\\max/g, 'arg max')
+       .replace(/\\arg\\min/g, 'arg min')
+       .replace(/\\operatorname\{([^\{\}]+)\}/g, '$1')
+       .replace(/\\max\b/g, 'max')
+       .replace(/\\min\b/g, 'min')
+       .replace(/\\;/g, ' ')
+       .replace(/\\,/g, ' ')
+       .replace(/\\text\{([^\{\}]+)\}/g, '$1')
+       .replace(/\\boxed\{([^\{\}]+)\}/g, '$1')
+       .replace(/\\emptyset/g, '∅')
+       .replace(/\\langle/g, '⟨')
+       .replace(/\\rangle/g, '⟩')
+       .replace(/\\left\(/g, '(')
+       .replace(/\\right\)/g, ')')
+       .replace(/\\left\[/g, '[')
+       .replace(/\\right\]/g, ']')
+       .replace(/\\left\\\{/g, '{')
+       .replace(/\\right\\\}/g, '}')
+       .replace(/\\\{/g, '{')
+       .replace(/\\\}/g, '}');
+
+  // Fractions inline: rac{a}{b} -> (a / b)
+  s = s.replace(/\\frac\{([^\{\}]+)\}\{([^\{\}]+)\}/g, '($1 / $2)');
+
+  // Superscripts: e.g. ^2 -> ², ^{T} -> ᵀ, ^{-z} -> ⁻ᶻ
+  s = s.replace(/\^\{([^\{\}]+)\}|\^([0-9a-zA-Z\+\-\(\)])/g, (match, p1, p2) => {
+    const inner = p1 || p2 || '';
+    let res = '';
+    for (let c of inner) {
+      res += SUPERSCRIPTS[c] || c;
+    }
+    return res;
+  });
+
+  // Common braced subscripts
+  s = s.replace(/_\{i=1\}/g, 'ᵢ₌₁')
+       .replace(/_\{t=1\}/g, 'ₜ₌₁')
+       .replace(/_\{j=1\}/g, 'ⱼ₌₁')
+       .replace(/_\{(MLE|MAP|test|H,D)\}/g, '($1)')
+       .replace(/_\{([^\{\}]+)\}/g, (match, inner) => {
+         let res = '';
+         for (let c of inner) {
+           res += SUBSCRIPTS[c] || c;
+         }
+         return res;
+       });
+
+  // Single variable subscripts: b_0 -> b₀, x_i -> xᵢ, etc.
+  s = s.replace(/([a-zA-Z\(\)])_([0-9a-zA-Z])/g, (match, v, sub) => {
+    return v + (SUBSCRIPTS[sub] || sub);
+  });
+
+  // Operators spacing: clean up unspaced b₀+b₁x -> b₀ + b₁x
+  s = s.replace(/([₀-₉a-z])\+([₀-₉a-z])/gi, '$1 + $2')
+       .replace(/([₀-₉a-z])\=([₀-₉a-z])/gi, '$1 = $2');
+
+  // Strip dollar signs from $var$
+  s = s.replace(/\$([a-zA-Z0-9_\^\+\-\=/\s\(\)·×]+)\$/g, '$1');
+
+  return s;
 }
 
 // ---------------- FORMULA TOKEN PARSER & STACKED FRACTION RENDERER ----------------
@@ -911,13 +1011,20 @@ function parseFormulaTokens(rawLine) {
 }
 
 function renderFormulaContent(content, theme, fontScale) {
-  const cleanContent = content
+  let cleanContent = content
     .replace(/^\s*(\$\$|\\\[|\$+)\s*/g, '')
     .replace(/\s*(\$\$|\\\]|\$+)\s*$/g, '')
-    .replace(/\\boxed\{([^{}]+)\}/g, '$1')
+    .replace(/\\boxed\{([\s\S]*)\}/g, '$1')
+    .replace(/\\begin\{(cases|aligned|matrix|pmatrix)\}/g, '')
+    .replace(/\\end\{(cases|aligned|matrix|pmatrix)\}/g, '')
+    .replace(/\\\\/g, '\n')
     .trim();
 
   if (!cleanContent) return null;
+
+  // Formula box has dark navy background (#0B0F19), so text must always be light and high-contrast
+  const formulaTextColor = '#F8FAFC';
+  const formulaAccentColor = '#38BDF8';
 
   const lines = cleanContent.split('\n');
 
@@ -940,7 +1047,7 @@ function renderFormulaContent(content, theme, fontScale) {
                 style={[
                   styles.formulaMatrixText,
                   {
-                    color: theme.text,
+                    color: formulaTextColor,
                     fontSize: 13.5 * fontScale,
                     lineHeight: 22 * fontScale,
                     fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
@@ -964,7 +1071,7 @@ function renderFormulaContent(content, theme, fontScale) {
                         style={[
                           styles.fractionNumerator,
                           {
-                            color: theme.text,
+                            color: formulaTextColor,
                             fontSize: 13 * fontScale,
                             fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
                           },
@@ -975,14 +1082,14 @@ function renderFormulaContent(content, theme, fontScale) {
                       <View
                         style={[
                           styles.fractionBar,
-                          { backgroundColor: theme.primary },
+                          { backgroundColor: formulaAccentColor },
                         ]}
                       />
                       <Text
                         style={[
                           styles.fractionDenominator,
                           {
-                            color: theme.text,
+                            color: formulaTextColor,
                             fontSize: 13 * fontScale,
                             fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
                           },
@@ -1000,7 +1107,7 @@ function renderFormulaContent(content, theme, fontScale) {
                     style={[
                       styles.formulaTextToken,
                       {
-                        color: theme.text,
+                        color: formulaTextColor,
                         fontSize: 14 * fontScale,
                         fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
                       },
@@ -1024,7 +1131,8 @@ function renderInlineText(rawText, baseStyle, theme) {
   const sanitizedText = cleanLatexSymbols(rawText.replace(/<br\s*\/?>/gi, ' '));
 
   const tokens = [];
-  const regex = /(\*\*[\s\S]+?\*\*|`[^`]+`|\*[^\*]+?\*|\$[^\$]+?\$|\\\([^\)]+?\\\))/g;
+  // Match bold, code, italic, math with $...$, and math with \( ... \) including nested parentheses
+  const regex = /(\*\*[\s\S]+?\*\*|`[^`]+`|\*[^\*]+?\*|\$[^\$\n]+?\$|\\\([\s\S]+?\\\))/g;
   let lastIndex = 0;
   let match;
 
@@ -1053,9 +1161,10 @@ function renderInlineText(rawText, baseStyle, theme) {
 
   return tokens.map((t, idx) => {
     if (t.type === 'bold') {
+      const cleanVal = cleanLatexSymbols(t.val).replace(/\$([^\$\n]+)\$/g, '$1');
       return (
         <Text key={`b-${idx}`} style={[baseStyle, { fontWeight: 'bold', color: theme.text }]}>
-          {t.val}
+          {cleanVal}
         </Text>
       );
     }
@@ -1078,6 +1187,7 @@ function renderInlineText(rawText, baseStyle, theme) {
       );
     }
     if (t.type === 'math') {
+      const cleanVal = cleanLatexSymbols(t.val).replace(/\$([^\$\n]+)\$/g, '$1');
       return (
         <Text
           key={`m-${idx}`}
@@ -1091,20 +1201,22 @@ function renderInlineText(rawText, baseStyle, theme) {
             },
           ]}
         >
-          {t.val}
+          {cleanVal}
         </Text>
       );
     }
     if (t.type === 'italic') {
+      const cleanVal = cleanLatexSymbols(t.val).replace(/\$([^\$\n]+)\$/g, '$1');
       return (
         <Text key={`i-${idx}`} style={[baseStyle, { fontStyle: 'italic' }]}>
-          {t.val}
+          {cleanVal}
         </Text>
       );
     }
+    const cleanVal = t.val.replace(/\$([^\$\n]+)\$/g, '$1');
     return (
       <Text key={`t-${idx}`} style={baseStyle}>
-        {t.val}
+        {cleanVal}
       </Text>
     );
   });
@@ -1229,11 +1341,32 @@ function FormattedContent({ content, theme, fontScale }) {
       const tableLines = [];
       while (i < lines.length && lines[i].trim().startsWith('|') && lines[i].trim().endsWith('|')) {
         const tLine = lines[i].trim();
+        // Skip markdown separator row like |---|---|
         if (!/^\|[\s\-:]+(\|[\s\-:]+)+\|$/.test(tLine)) {
-          const cells = tLine
-            .split('|')
-            .slice(1, -1)
-            .map((c) => c.trim());
+          // Parse cells safely protecting pipes inside math \(...\) or $...$
+          const inner = tLine.slice(1, -1);
+          const cells = [];
+          let cur = '';
+          let inParenMath = false;
+          let inDollarMath = false;
+          let braceDepth = 0;
+          for (let j = 0; j < inner.length; j++) {
+            const char = inner[j];
+            const prev = j > 0 ? inner[j - 1] : '';
+            if (char === '(' && prev === '\\') inParenMath = true;
+            else if (char === ')' && prev === '\\') inParenMath = false;
+            else if (char === '$' && prev !== '\\') inDollarMath = !inDollarMath;
+            else if (char === '{' && prev !== '\\') braceDepth++;
+            else if (char === '}' && prev !== '\\' && braceDepth > 0) braceDepth--;
+
+            if (char === '|' && prev !== '\\' && !inParenMath && !inDollarMath && braceDepth === 0) {
+              cells.push(cur.trim());
+              cur = '';
+            } else {
+              cur += char;
+            }
+          }
+          cells.push(cur.trim());
           tableLines.push(cells);
         }
         i++;
@@ -1242,21 +1375,63 @@ function FormattedContent({ content, theme, fontScale }) {
 
       if (tableLines.length > 0) {
         const headerCells = tableLines[0];
-        const bodyRows = tableLines.slice(1);
+        const rawBodyRows = tableLines.slice(1);
         const colCount = headerCells.length;
         const isTwoCol = colCount === 2;
 
+        // Normalize body rows so each row has exactly colCount cells
+        const bodyRows = rawBodyRows.map(row => {
+          if (row.length === colCount) return row;
+          if (row.length < colCount) {
+            return [...row, ...Array(colCount - row.length).fill('')];
+          }
+          return [...row.slice(0, colCount - 1), row.slice(colCount - 1).join(' ')];
+        });
+
+        // Compute synchronized pixel width for each column index across header and all body rows
+        const colWidths = headerCells.map((h, colIdx) => {
+          if (isTwoCol) return null;
+          const allColTexts = [h, ...bodyRows.map(r => r[colIdx] || '')];
+          const maxLen = Math.max(...allColTexts.map(t => (t ? t.length : 0)));
+          if (colIdx === 0 && maxLen <= 6) return 55;
+          if (colIdx === 0 && maxLen <= 12) return 80;
+          if (colCount === 3) {
+            return 220;
+          }
+          if (colCount === 4) {
+            return Math.max(130, Math.min(220, maxLen * 5 + 30));
+          }
+          return Math.max(115, Math.min(210, maxLen * 5 + 30));
+        });
+
+        const totalTableWidth = isTwoCol ? undefined : colWidths.reduce((a, b) => a + b, 0);
+
         const tableComponent = (
-          <View style={[styles.tableContainer, { width: '100%', borderColor: theme.border, backgroundColor: theme.card }]}>
-            <View style={[styles.tableHeaderRow, { backgroundColor: theme.primaryBg, borderBottomColor: theme.primary, borderBottomWidth: 2 }]}>
+          <View style={[
+            styles.tableContainer,
+            {
+              width: isTwoCol ? '100%' : totalTableWidth,
+              borderColor: theme.border,
+              backgroundColor: theme.card
+            }
+          ]}>
+            {/* Table Header Row */}
+            <View style={[
+              styles.tableHeaderRow,
+              {
+                backgroundColor: theme.primaryBg,
+                borderBottomColor: theme.primary,
+                borderBottomWidth: 2,
+              }
+            ]}>
               {headerCells.map((h, hIdx) => (
                 <View
                   key={`th-${hIdx}`}
                   style={[
                     styles.tableCell,
-                    isTwoCol ? { flex: 1 } : { minWidth: Math.max(105, Math.floor((SCREEN_WIDTH - 64) / colCount)) },
+                    isTwoCol ? { flex: 1 } : { width: colWidths[hIdx] },
                     {
-                      borderRightWidth: hIdx < colCount - 1 ? 1.2 : 0,
+                      borderRightWidth: hIdx < colCount - 1 ? 1 : 0,
                       borderRightColor: theme.border,
                       paddingVertical: 10,
                       paddingHorizontal: 10,
@@ -1264,11 +1439,13 @@ function FormattedContent({ content, theme, fontScale }) {
                   ]}
                 >
                   <Text style={[styles.tableHeaderText, { color: theme.text, fontSize: (isTwoCol ? 13 : 12.5) * fontScale }]}>
-                    {h}
+                    {renderInlineText(h, { color: theme.text, fontSize: (isTwoCol ? 13 : 12.5) * fontScale, fontWeight: 'bold' }, theme)}
                   </Text>
                 </View>
               ))}
             </View>
+
+            {/* Table Body Rows */}
             {bodyRows.map((row, rIdx) => (
               <View
                 key={`tr-${rIdx}`}
@@ -1286,9 +1463,9 @@ function FormattedContent({ content, theme, fontScale }) {
                     key={`td-${cIdx}`}
                     style={[
                       styles.tableCell,
-                      isTwoCol ? { flex: 1 } : { minWidth: Math.max(105, Math.floor((SCREEN_WIDTH - 64) / colCount)) },
+                      isTwoCol ? { flex: 1 } : { width: colWidths[cIdx] },
                       {
-                        borderRightWidth: cIdx < colCount - 1 ? 1.2 : 0,
+                        borderRightWidth: cIdx < colCount - 1 ? 1 : 0,
                         borderRightColor: theme.border,
                         paddingVertical: 10,
                         paddingHorizontal: 10,
@@ -1316,7 +1493,7 @@ function FormattedContent({ content, theme, fontScale }) {
             <ScrollView
               key={`tbl-${i}`}
               horizontal
-              showsHorizontalScrollIndicator={false}
+              showsHorizontalScrollIndicator={true}
               style={styles.tableScrollWrapper}
             >
               {tableComponent}
@@ -1338,7 +1515,15 @@ function FormattedContent({ content, theme, fontScale }) {
 
       if (!cleanContent) return null;
 
-      const imgData = (formulaImages && (formulaImages[cleanContent] || formulaImages[content.trim()] || formulaImages[cleanContent.replace(/\\\[|\\\]/g, '').trim()])) || null;
+      const cleanContentNoBracket = cleanContent.replace(/\\\[|\\\]/g, '').trim();
+      const normalizedKey = cleanContent.replace(/\s+/g, ' ').trim();
+      const imgData = (formulaImages && (
+        formulaImages[cleanContent] ||
+        formulaImages[content.trim()] ||
+        formulaImages[cleanContentNoBracket] ||
+        formulaImages[normalizedKey] ||
+        formulaImages[cleanContentNoBracket.replace(/\s+/g, ' ').trim()]
+      )) || null;
 
       return (
         <View
@@ -1727,7 +1912,7 @@ const styles = StyleSheet.create({
   },
   detailScrollContent: {
     padding: 16,
-    paddingBottom: 40,
+    paddingBottom: 75,
   },
   detailTitle: {
     fontWeight: 'bold',
@@ -2112,7 +2297,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingTop: Platform.OS === 'android' ? STATUSBAR_HEIGHT + 10 : 14,
+    paddingBottom: 14,
     borderBottomWidth: 1,
   },
   chatModalTitle: {
